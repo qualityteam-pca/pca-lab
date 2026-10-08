@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA – Laboratory Management System</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--n:#0f1c3a;--b:#1d4ed8;--bg:#f1f5fb;--bd:#d9e1ef}
+*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:#0f1c3a;display:flex;min-height:100vh}
+aside{width:220px;background:var(--n);color:#c9d5ee;padding:14px 10px;position:sticky;top:0;height:100vh;overflow:auto;flex:none}
+aside img{width:54px;height:54px;border-radius:50%;display:block;margin:4px 8px}
+aside h1{font-size:13px;color:#fff;margin:6px 8px 12px;letter-spacing:.5px}
+aside p{font-size:11px;letter-spacing:1px;margin:14px 8px 4px;color:#7f93bd}
+aside a{display:block;padding:8px 10px;border-radius:6px;cursor:pointer;white-space:nowrap}
+aside a.on,aside a:hover{background:var(--b);color:#fff}
+section{flex:1;min-width:0;padding:16px 20px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.top h2{margin:0;font-size:20px;text-transform:uppercase;letter-spacing:.5px}
+.band{background:var(--n);color:#fff;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.band img{width:64px;height:64px;border-radius:50%}.band h1{margin:0;font-size:22px;letter-spacing:.5px}.band h3{margin:2px 0 0;font-size:15px;color:#9db7ff}
+.band .dr{margin-left:auto;background:#fff;color:var(--n);padding:8px 12px;border-radius:10px;display:grid;gap:4px}
+.qg{display:grid;grid-template-columns:190px minmax(0,1fr) 280px;gap:14px;align-items:start}
+.k3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.k3 .box{text-align:center;margin:0}.k3 h4{margin:0;letter-spacing:1px}.k3 b{font-size:34px}
+.box{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.box h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:12px}
+label{font-size:12px;color:#475569;display:grid;gap:4px}
+input,select{padding:8px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;width:100%;background:#fff}
+.btn{background:var(--b);color:#fff;border:0;padding:9px 16px;border-radius:8px;cursor:pointer;font:inherit}
+.btn.o{background:#fff;color:var(--n);border:1px solid #cbd5e1}.btn.d{background:#dc2626;padding:4px 9px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.tabs .btn{background:#fff;color:var(--n);border:1px solid #cbd5e1}.tabs .btn.on{background:var(--b);color:#fff}
+.wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
+th,td{padding:7px;text-align:left;border-bottom:1px solid var(--bd)}th{background:#e3ebfa}
+.t{padding:2px 8px;border-radius:6px;font-weight:600}.p{background:#dcfce7;color:#15803d}.f{background:#fee2e2;color:#b91c1c}
+.hb{display:grid;grid-template-columns:130px minmax(0,1fr);align-items:center;margin:6px 0;font-size:12px}.hb div{display:flex}
+.hb i{font-style:normal;color:#fff;font-size:11px;text-align:center;padding:4px 0;min-width:18px}
+.vb{display:flex;gap:6px;align-items:flex-end;height:200px;overflow-x:auto;padding-top:6px}
+.vb div{flex:1;min-width:22px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font-size:10px;text-align:center}
+.vb i{width:70%;background:var(--b);display:block;border-radius:3px 3px 0 0}
+.msg{margin:8px 0 0}textarea{padding:8px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;width:100%}.tp,.tp2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.tp2{gap:12px;margin-top:12px}.sh{background:#eef3fb;border-radius:10px;padding:12px}.dm{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.q2{display:grid;grid-template-columns:270px minmax(0,1fr);gap:14px;align-items:start}.pn3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}.pnl{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:10px}.pnl .box{padding:10px;margin-bottom:10px}.pnl .box h3{font-size:12px}.ph{background:var(--n);color:#fff;border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:center;margin-bottom:10px}.ph span{font-size:30px}.ph h2{margin:0;font-size:18px;letter-spacing:.5px}.ph small{color:#9db7ff}.k5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}.k5 div{border:1px solid var(--bd);border-radius:8px;padding:6px 2px;text-align:center}.k5 small{display:block;font-size:9px;font-weight:700;letter-spacing:.5px}.k5 b{display:block;font-size:20px}.pg{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:start}.fl{display:grid;gap:8px}.fl label{font-size:10px}.fl select{padding:5px;font-size:11px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.gn{display:flex;justify-content:space-around;text-align:center;font-size:12px}.gn b{display:block;font-size:22px}.ok{color:#15803d}.er{color:#b91c1c}
+@media(max-width:900px){body{flex-direction:column}aside{width:100%;height:auto;position:static;display:flex;overflow-x:auto;align-items:center}aside img,aside h1,aside p{display:none}.qg,.q2,.tp,.tp2{grid-template-columns:1fr}.k3{grid-template-columns:1fr}}
+body{background:linear-gradient(135deg,#e8f0ff,#f7faff 45%,#e9f6f3)}aside{background:linear-gradient(180deg,#09122b,#12306b)}aside a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:.15s}aside a svg{flex:none}aside a.on{background:linear-gradient(90deg,#2563eb,#38bdf8);color:#fff;box-shadow:0 4px 14px #2563eb66}aside a:hover{background:#ffffff1f;color:#fff}.band{background:repeating-linear-gradient(115deg,#ffffff10 0 2px,transparent 2px 30px),linear-gradient(110deg,#09122b,#1b3f8f 62%,#2b6df0);box-shadow:0 8px 22px #1b3f8f40}.band img{border:3px solid #fff;box-shadow:0 0 0 3px #2563eb}.band h1{font-size:26px;letter-spacing:1px;text-shadow:0 2px 8px #0006}.band .dr select{border:0;background:#eef3fb;font-size:12px;padding:4px}.box,.pnl{box-shadow:0 6px 18px #1d4ed814}.pnl{border:0;padding:12px;background:#ffffffd9}.ph{background:repeating-linear-gradient(115deg,#ffffff0f 0 2px,transparent 2px 26px),linear-gradient(105deg,#0b1a40,#1d4ed8);box-shadow:0 6px 16px #1d4ed855}.ph .ico{width:60px;height:60px;border:2px solid #fff;border-radius:50%;display:grid;place-items:center;flex:none;background:#ffffff1a}.ph h2{font-size:22px;letter-spacing:1px}.k5 div{border:0;border-top:4px solid var(--c);background:linear-gradient(#fff,#f6f9ff);box-shadow:0 4px 12px #0f1c3a14;padding:8px 2px}.ki{width:34px;height:34px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;margin:2px auto 4px;box-shadow:0 3px 8px var(--c)}.k5 b{color:var(--c);font-size:24px}.k3 .box{border-top:4px solid #1d4ed8}.k3 .box:nth-child(2){border-top-color:#10b981}.k3 .box:nth-child(3){border-top-color:#ef4444}.btn{background:linear-gradient(90deg,#1d4ed8,#2b6df0)}.pg{grid-template-columns:170px minmax(0,1fr)}.two{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}@media(max-width:1350px){.pn3{grid-template-columns:1fr}}@media(max-width:700px){.pg,.two{grid-template-columns:1fr}.k5 b{font-size:16px}}.qg>*{min-width:0}.qg .qb{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:14px;align-items:start}.qg .qb .box{margin-bottom:0}.qg .wrap table{font-size:11px}.qg .wrap th,.qg .wrap td{padding:5px 7px}.band .dr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px}.band .dr input,.band .dr select{width:auto}.band .dr input{padding:4px 6px}#main{transform-origin:0 0}.wr{white-space:normal;min-width:200px;max-width:280px;word-break:break-word;line-height:1.35}</style></head><body>
+<aside id="nav"></aside>
+<section><div class="top" id="top"></div><div id="main">Memuat...</div></section>
+<script>
+const LOGO='data:image/jpeg;base64,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';
+const sb=supabase.createClient('https://bdjmcfvjwtsnomufypdv.supabase.co','sb_publishable_uctUGRHP5ol0Shs9DsGtAg_w5J0Me_L');
+let ses=null,view='dmat',K='mat',tab='mat',ROWS=[],SC='Eksternal',INT=false;
+const iso=d=>d.toISOString().slice(0,10),DS={d1:new Date().getFullYear()+'-01-01',d2:iso(new Date()),l:'',a:'',m:''};
+const $=s=>document.querySelector(s),A=h=>{$('#main').innerHTML=h;requestAnimationFrame(fitDash);setTimeout(fitDash,350)};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tag=r=>`<span class="t ${r==='Pass'||r==='Active'?'p':'f'}">${esc(r)}</span>`;
+const RS=['Pass','Fail'],RR=['Over Dry Cement','Poor Pressing','Poor Priming','Other'],LN=[...Array(12).keys()].map(i=>'F5-'+(Math.floor(i/2)+1)+'AB'[i%2]);
+const TY=['Synthetic','Accessories','Leather','Textile','Laminating','Printing','CT-05','Polymer','Adhesive','Screen Printing','Rubber Plate'];
+const T=(n,l,r)=>[n,l,'text',0,r],D=(n,l,r)=>[n,l,'date',0,r],N=(n,l,r)=>[n,l,'number',0,r],S=(n,l,o,r)=>[n,l,'select',o,r];
+const BF=[S('scope','Data Type',['Eksternal','Internal'],1),D('test_date','Date',1),S('line_no','Line No.',LN,1),T('lab_no','Lab No.'),T('po_no','PO No.'),T('article_no','Article No.',1),T('model_name','Model Name'),S('age_grouping','Age Grouping',['Men','Women','Kids']),T('size_no','Size'),T('adhesive_supplier','Main Adhesive Supplier'),N('avg_val','Average'),N('max_val','Max'),N('min_val','Min'),T('reject_intervals','Reject Intervals in 1 Specimen'),T('reject_area','Areas of Reject'),S('reject_reason','Reject Reason',RR),S('result','Result',RS,1)];
+const X=(g,s,hid,fo)=>{const a=Object.assign([0,0,'text',0,0,0,0,0],s);a[6]=g;if(hid)a[5]=1;if(fo)a[7]=1;return a};
+const MOD={
+kal:{t:'calibration_records',n:'Kalibrasi',d:r=>r.cal_date||r.created_at.slice(0,10),f:[T('item_machine','Item Machine',1),N('qty','Qty'),T('brand','Brand'),T('manufacture','Manufacture'),T('code_machine','Code of Machine'),T('series_no','Series No'),S('item_type','Type (Tool / Machine)',['Tool','Machine']),T('pic','PIC'),T('no_inventaris','No Inventaris'),T('no_wi','No WI'),T('verification','Verification'),S('cal_freq','Calibration Frequency',['Internal','External']),T('third_party','3rd Party (Calibration By)'),D('cal_date','Calibration Date',1),T('cal_result','Calibration Result'),['maintenance','Maintenance','check',['Daily','Weekly','Monthly','Quarterly','Yearly']],S('notes','Notes',['Good Condition','Broken']),T('modification','Modification'),['remarks','Remarks','textarea']]},
+mat:{t:'material_tests',n:'Material Testing',d:r=>r.lab_in_date,f:[T('article','Article'),T('supplier_name','Supplier Name'),T('material_number','Material Number'),T('colour','Colour'),T('material_description','Material Full Description'),D('lab_in_date','Lab In Date',1),D('lab_out_date','Lab Out Date'),T('lab_test_no','Lab Test No.',1),T('ftr_no','FTR No.'),T('material_name','Material Name',1),S('material_type','Material Type',TY,1),S('result','Result',RS,1),T('failure_part_testing','Reason Failure – Part Testing'),T('failure_standard','Reason Failure – Standard'),T('failure_test_result','Reason Failure – Test Result'),S('result_retest','Result Retest',RS),T('released_part_testing','Reason Released – Part Testing'),T('released_standard','Reason Released – Standard'),T('released_test_result','Reason Released – Test Result'),T('remark','Remark')]},
+bond:{t:'bonding_records',n:'Bonding',d:r=>r.test_date,f:BF},
+stock:{t:'stockfitting_records',n:'Stockfitting',d:r=>r.test_date,f:BF},
+fgt:{t:'fgt_records',n:'Finish Good Testing',d:r=>r.lab_in,f:[T('season','Season'),T('model_name','Model Name'),T('article_no','Article No',1),T('material_way_id','Material Way ID'),T('color','Color'),T('category','Category'),T('product_level','Product Level'),T('dev_type','Dev Type'),N('qty','QTY'),S('gender','Gender',['Men','Women','Kids','Unisex']),T('factory','Factory'),T('sender','Sender'),T('prod_line','Prod Line'),T('size_no','Size'),T('lab_no','Lab No',1),['order_month','Order Month','month'],T('country','Country'),T('order_no','Order No'),D('lab_in','Lab In',1),N('qty_fgt','QTY FGT'),N('qty_received','QTY Received'),D('lab_out','Lab Out'),D('podd','PODD'),S('fgt_result','FGT Result',RS),T('ct_lab_no','Lab No CT'),D('ct_lab_in','CT Lab In'),N('ct_qty','QTY CT'),N('ct_qty_received','CT Qty Received'),D('ct_lab_out','CT Lab Out'),S('ct_upper','CT Upper',RS),S('ct_bottom','CT Bottom',RS),S('cma_test','CMA Test',RS),T('atp_id','ATP ID'),D('upload_date','Upload Date'),T('remark','Remark')]},
+ocpt:{t:'ocpt_records',n:'OCPT',d:r=>r.received_date,f:[D('received_date','Received Date',1),T('line','Line'),T('sd_document','SD Document'),T('po_number','PO Number'),T('model_name','Model Name',1),S('gender','Gender',['Men','Women','Kids','Unisex']),T('fit_test_size','Fit Test Size'),N('pairs','Pairs'),T('article_number','Article Number'),T('style_color','Style Color'),T('season','Season'),T('development_type','Development Type (in ATP)'),T('shoe_last','Last'),T('model_number','Model Number'),T('fg','FG'),T('test_level','Test Level'),T('category_intended_use','Category & Intended Use'),T('mat_way_id','Mat Way ID'),T('destination','Destination'),T('developer','Developer'),T('atp_id_fit','ATP ID Fit'),T('atp_id_visual','ATP ID Visual'),S('result','Result',RS,1),['summary_test_result','Summary Test Result','textarea'],['remark','Remark','textarea']]},
+tester:{t:'tester_pool',n:'Tester Pool',grp:1,d:r=>r.created_at.slice(0,10),f:[X('P',T('name','Name',1)),X('P',T('dept','Dept',1)),X('P',S('gender','Gender',['Male','Female'])),X('R',N('brannock_r','Brannock UK Size (Right)')),X('R',N('foot_length_r','Foot Length (Right)',1)),X('R',N('ball_girth_r','Ball Girth (Right)',1)),X('R',N('ball_width_r','Ball Width (Right)',1)),X('R',N('heel_girth_r','Heel Girth (Right)',1)),X('R',N('heel_width_r','Heel Width (Right)',1)),X('L',N('brannock_l','Brannock UK Size (Left)')),X('L',N('foot_length_l','Foot Length (Left)',1)),X('L',N('ball_girth_l','Ball Girth (Left)',1)),X('L',N('ball_width_l','Ball Width (Left)',1)),X('L',N('heel_girth_l','Heel Girth (Left)',1)),X('L',N('heel_width_l','Heel Width (Left)',1)),X('M',['foot_width','Foot Measurement (Width)','radio',['Narrow Foot','Normal Foot','Wide Foot'],1],0,1),X(0,T('foot_narrow','Foot Measurement (Narrow Foot)'),1),X(0,T('foot_normal','Foot Measurement (Normal Foot)'),1),X(0,T('foot_wide','Foot Measurement (Wide Foot)'),1),X('M',S('slip_on','Slip On (Yes/No)',['Yes','No'])),X('P',T('tester_id','Tester ID',1)),X('P',D('dob','Date of Birth (dd-mm-yyyy)',1)),X('P',T('place_of_birth','Place of Birth')),X('P',N('height_cm','Height (cm)',1)),X('P',N('weight_kg','Weight (kg)',1)),X('P',['address','Address','textarea',0,1]),X('P',T('wa','WA',1)),X('P',['email','E-mail','email',0,1]),X('P',T('activities','Tester Activities',1)),X('P',S('footstrike_pattern','Footstrike Pattern',['Heel Strike','Midfoot Strike','Forefoot Strike'])),X('P',S('result','Result',['Pass','Eliminated'])),X('P',S('status','Status',['Active','Deactive'])),X('P',['remark','Remark','textarea'])]}};
+Object.values(MOD).forEach(m=>{m.a=m.f;m.f=m.f.filter(f=>!f[7])});
+const IC={flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 14h9"/>',shoe:'<path d="M3 17v-4l4-1 3-4 3 2 2 1c3 .5 6 1.5 6 4v2H3z"/><path d="M3 17h18M9 10l1.5 2M12 11.5l1.2 1.6"/>',target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 1v5M12 18v5M1 12h5M18 12h5"/>',check:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',x:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',hourglass:'<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',refresh:'<path d="M20 11a8 8 0 0 0-14-4M4 4v4h4M4 13a8 8 0 0 0 14 4M20 20v-4h-4"/>',box:'<path d="M12 2 3 7v10l9 5 9-5V7l-9-5zM3 7l9 5 9-5M12 12v10"/>',male:'<circle cx="12" cy="5" r="3"/><path d="M8 22v-8l-2-1v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3l-2 1v8"/>',female:'<circle cx="12" cy="5" r="3"/><path d="m12 9-5 9h10l-5-9zM10 18v4M14 18v4"/>',link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',layers:'<path d="m12 3 9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17l9 5 9-5"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/>',db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 5a3 3 0 0 1 0 6M18 15c2 .7 3 2.2 3 5"/>',out:'<path d="M9 21H5V3h4M16 17l5-5-5-5M21 12H9"/>'};
+const ic=(n,s=20)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
+const NAVG=[['DASHBOARD',[['dmat','Material Testing','flask'],['dfgt','FGT','shoe'],['docpt','OCPT & Tester Pool','target'],['dbond','Bonding','link'],['dstock','Stockfitting','layers']]],['INPUT (PUBLIK)',[['input','Input Data','edit']]],['DATA (LOGIN)',[['lmat','Material Testing','flask'],['lfgt','FGT','shoe'],['lbond','Bonding','link'],['lstock','Stockfitting','layers'],['locpt','OCPT','target'],['ltester','Tester Pool','users'],['master','Master Data','db']]]];
+const NAVI=[['DASHBOARD INTERNAL',[['dibond','Bonding','link'],['distock','Stockfitting','layers'],['dkal','Kalibrasi','target']]],['DATA INTERNAL',[['lkal','Kalibrasi','db']]]],SQ=q=>/^(bond|stock)$/.test(K)&&!/^di(bond|stock)$/.test(view)?q.eq('scope',SC):q,VF=m=>INT?m.f:m.f.filter(f=>f[0]!=='scope');
+const go=v=>{view=v;SCR=1;render()},lock=()=>A(`<div class="box"><p>Halaman ini hanya untuk akun terdaftar.</p><button class="btn" onclick="go('login')">Login</button></div>`);
+async function render(){
+  SC=/^[dl]i(bond|stock)$/.test(view)?'Internal':'Eksternal';const vv=view.replace(/^([dl])i/,'$1'),isD=/^d(mat|bond|stock|fgt|ocpt|kal)$/.test(vv),isL=/^l(mat|bond|stock|fgt|ocpt|tester|kal)$/.test(vv);if(isD||isL)K=vv.slice(1);
+  $('#nav').innerHTML=`<img src="${LOGO}"><h1>LABORATORY<br>MANAGEMENT SYSTEM</h1>`+[NAVG[0],...(INT?NAVI:[]),...NAVG.slice(1)].map(([g,i])=>`<p>${g}</p>`+i.map(([k,l,n])=>`<a class="${view===k?'on':''}" onclick="go('${k}')">${ic(n)}<span>${l}</span></a>`).join('')).join('')+`<p>AKUN</p>`+(ses?`<a onclick="sb.auth.signOut()">${ic('out')}<span>Logout</span></a>`:`<a class="${view==='login'?'on':''}" onclick="go('login')">${ic('lock')}<span>Login</span></a>`);
+  $('#top').innerHTML=`<h2>${isD?'':isL?'Data – '+MOD[K].n+(SC==='Internal'?' (Internal)':''):{input:'Input Data',master:'Master Material',login:'Login Staf'}[view]}</h2><small>${ses?esc(ses.user.email):'Guest'}</small>`;
+  if((SC==='Internal'||/^[dl]kal$/.test(vv))&&!INT)return A('<div class="box"><p>Menu internal hanya untuk akun yang diizinkan.</p></div>');
+  if(isD)return K==='kal'?dkal():K==='bond'||K==='stock'?dq():dqc();
+  if(isL)return list();
+  ({input,master,login})[view]();
+}
+const gauge=p=>`<svg viewBox="0 0 200 115"><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="#e2e8f3" stroke-width="24"/><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="#0f1c3a" stroke-width="24" pathLength="100" stroke-dasharray="${p} 100"/><text x="100" y="95" text-anchor="middle" font-size="26" font-weight="700" fill="#0f1c3a">${p.toFixed(2)}%</text></svg>`;
+const cap=(x,y)=>`<small style="display:block;color:#475569;margin-top:6px">Sumbu X: ${x} · Sumbu Y: ${y}</small>`;
+const vb=a=>`<div class="vb">${a.map(x=>`<div${x.c?` onclick="${x.c}" style="cursor:pointer"`:''}>${x.v}<i style="height:${x.h}%"></i>${esc(x.l)}</div>`).join('')||'<small>Belum ada data</small>'}</div>`;
+const preset=v=>{const n=new Date(),y=n.getFullYear();DS.d1=v==='m'?iso(new Date(Date.UTC(y,n.getMonth(),1))):v==='30'?iso(new Date(Date.now()-30*864e5)):v==='y'?y+'-01-01':'2000-01-01';DS.d2=iso(n);render()};
+const band=(t,sub)=>`<div class="band"><img src="${LOGO}"><div><h1>${t}</h1><h3>${sub}</h3></div><div class="dr"><b>DATE RANGE</b><input type="date" value="${DS.d1}" onchange="DS.d1=this.value;render()"><input type="date" value="${DS.d2}" onchange="DS.d2=this.value;render()"><select onchange="preset(this.value)"><option value="">Rentang cepat...</option><option value="m">Bulan ini</option><option value="30">30 hari terakhir</option><option value="y">Tahun ini</option><option value="a">Semua data</option></select></div></div>`;
+const kpi=(a,b,c)=>`<div class="k3"><div class="box" style="cursor:pointer" onclick="dd('t')"><h4>TOTAL TEST</h4><b>${a}</b></div><div class="box" style="cursor:pointer" onclick="dd('p')"><h4>PASS</h4><b>${b}</b></div><div class="box" style="cursor:pointer" onclick="dd('f')"><h4>REJECTED</h4><b>${c}</b></div></div>`;
+const SCS=()=>SC==='Internal'?['Internal','Eksternal']:[SC];
+const uni=(a,b)=>[...new Set([...(a||[]),...(b||[])])].sort();
+async function QD(){
+  const R=await Promise.all(SCS().map(s=>sb.rpc('dash_qc',{t:MOD[K].t,d1:DS.d1,d2:DS.d2,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:s}).then(r=>({s,d:r.data||null}))));
+  const by={},re={},li={},tp={},o={lines:[],articles:[],models:[]};let total=0,pass=0;
+  R.forEach(({s,d})=>{d=d||{};by[s]={total:d.total||0,pass:d.pass||0};total+=d.total||0;pass+=d.pass||0;
+    (d.reasons||[]).forEach(r=>{const k=r.reason+'|'+r.zone;(re[k]=re[k]||{reason:r.reason,zone:r.zone,n:0}).n+=r.n});
+    (d.lines||[]).forEach(r=>{const e=li[r.l]=li[r.l]||{l:r.l,total:0,pass:0};e.total+=r.total;e.pass+=r.pass});
+    (d.tops||[]).forEach(r=>{const k=[r.article_no,r.model_name,r.po_no].join('|'),e=tp[k]=tp[k]||{article_no:r.article_no,model_name:r.model_name,po_no:r.po_no,n:0};e.n+=r.n});
+    const q=d.opts||{};o.lines=uni(o.lines,q.lines);o.articles=uni(o.articles,q.articles);o.models=uni(o.models,q.models)});
+  return{by,data:{total,pass,reasons:Object.values(re),lines:Object.values(li).sort((a,b)=>String(a.l).localeCompare(String(b.l),undefined,{numeric:true})),tops:Object.values(tp).sort((a,b)=>b.n-a.n).slice(0,8),opts:o}};
+}
+async function QM(){
+  const R=await Promise.all(SCS().map(s=>sb.rpc('dash_qc_monthly',{t:MOD[K].t,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:s}).then(r=>r.data||[]))),m={};
+  R.flat().forEach(r=>{const k=r.y+'-'+r.m,e=m[k]=m[k]||{y:r.y,m:r.m,total:0,pass:0};e.total+=r.total;e.pass+=r.pass});
+  return Object.values(m);
+}
+async function dq(){
+  const {data,by}=await QD();
+  const mo=await QM(),MN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],ys=[...new Set([...mo.map(r=>r.y),new Date().getFullYear()])].sort(),yy=DS.y=ys.includes(DS.y)?DS.y:new Date().getFullYear();
+  const MONTHLY=`<h3>Quality Rate Monthly <select style="width:auto;display:inline-block;margin-left:8px" onchange="DS.y=+this.value;render()">${ys.map(y=>`<option ${y===yy?'selected':''}>${y}</option>`).join('')}</select></h3>${vb(MN.map((n,i)=>{const r=mo.find(z=>z.y===yy&&z.m===i+1),p=r&&r.total?r.pass*100/r.total:0;return{l:n,v:r?p.toFixed(1)+'%':'-',h:p,c:r?`dd('m',${i+1})`:''}}))}${cap('bulan','Quality Rate (%) = Pass ÷ Total test; angka di atas batang = nilai %')}`;
+  const x=data||{total:0,pass:0,reasons:[],lines:[],tops:[],opts:{lines:[],articles:[],models:[]}},o=x.opts||{lines:[],articles:[],models:[]},rate=x.total?x.pass*100/x.total:0;
+  const sel=(l,k,a)=>`<label>${l}<select onchange="DS.${k}=this.value;render()"><option value="">All</option>${(a||[]).map(v=>`<option ${DS[k]===v?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
+  const rs={};(x.reasons||[]).forEach(r=>{sp(r.reason).forEach(pt=>{const k=tc(pt),e=rs[k]=rs[k]||{tot:0,z:{}};e.tot+=r.n;e.z[r.zone]=(e.z[r.zone]||0)+r.n})});
+  const top=Object.entries(rs).sort((a,b)=>b[1].tot-a[1].tot).slice(0,5),mx=Math.max(1,...top.map(e=>e[1].tot));const zs=[...new Set((x.reasons||[]).map(r=>r.zone))],PAL=['#0f1c3a','#1d4ed8','#94a3b8','#60a5fa','#f59e0b','#10b981','#a855f7'],ZC=Object.fromEntries(zs.map((z,i)=>[z,PAL[i%PAL.length]]));
+  A(band('DAILY QUALITY DASHBOARD',MOD[K].n.toUpperCase()+' ASSEMBLING'+(SC==='Internal'?' – INTERNAL + EKSTERNAL':''))+`<div class="qg">
+  <div class="box"><h3>Filter</h3><div style="display:grid;gap:12px">${sel('LINE NO.','l',o.lines)+sel('ARTICLE NO.','a',o.articles)+sel('MODEL NAME','m',o.models)}</div></div>
+  <div>${kpi(x.total,x.pass,x.total-x.pass)}${SC==='Internal'?`<div class="box" style="padding:8px 14px"><small>Sumber data dashboard: <b>Internal ${by.Internal.total}</b> test (pass ${by.Internal.pass}) + <b>Eksternal ${by.Eksternal.total}</b> test (pass ${by.Eksternal.pass}) = <b>${x.total}</b> test</small></div>`:''}
+  <div class="box"><h3>Top 5 Rejected Reason & Area</h3>${top.map(([k,v])=>`<div class="hb" style="cursor:pointer" onclick="dd('r','${encodeURIComponent(k)}')"><span>${esc(k)}</span><div>${Object.entries(v.z).map(([z,n])=>`<i style="width:${n*100/mx}%;background:${ZC[z]||'#cbd5e1'}">${n}</i>`).join('')}</div></div>`).join('')||'<small>Tidak ada reject</small>'}
+  <small>${Object.entries(ZC).map(([z,c])=>`<b style="color:${c}">●</b> ${z}`).join(' &nbsp; ')}</small></div>
+  </div>
+  <div><div class="box"><h3>Quality Rate</h3>${gauge(rate)}</div>
+  </div><div class="qb"><div class="box"><h3>Quality Rate per Line</h3>${vb((x.lines||[]).map(r=>({l:r.l,v:(r.pass*100/r.total).toFixed(1)+'%',h:r.pass*100/r.total,c:`dd('l','${encodeURIComponent(r.l)}')`})))}${cap('Line No.','Quality Rate (%); angka di atas batang = nilai %')}</div><div class="box wrap"><h3>Top Articles & POs by Rejects</h3><table><tr><th>Article</th><th>Model</th><th>PO No.</th><th>Rejects</th></tr>${(x.tops||[]).map(r=>`<tr><td>${esc(r.article_no)}</td><td>${esc(r.model_name)}</td><td>${esc(r.po_no)}</td><td>${r.n}</td></tr>`).join('')}<tr><th colspan="3">Total</th><th>${x.total-x.pass}</th></tr></table></div></div><div class="box" style="grid-column:1/-1">${MONTHLY}</div></div>`);
+}
+let FT;
+function fitDash(){
+  const el=$('#main');if(!el)return;
+  el.style.transform=el.style.width=el.style.marginBottom='';
+  if(!/^di?(mat|bond|stock|fgt|ocpt)$/.test(view))return;
+  const av=window.innerHeight-(el.getBoundingClientRect().top+window.scrollY)-12;let z=1;
+  for(let i=0;i<6;i++){el.style.width=(100/z)+'%';const h=el.offsetHeight;if(h*z<=av||z<=.65)break;z=Math.max(.65,z*av/h*.98)}
+  if(z>=.999){el.style.width='';return}
+  el.style.width=(100/z)+'%';el.style.transform='scale('+z+')';el.style.marginBottom=(-el.offsetHeight*(1-z))+'px';
+}
+addEventListener('resize',()=>{clearTimeout(FT);FT=setTimeout(fitDash,150)});
+let SCR=0;const DQ={mat:{},fgt:{},t:{}};
+const kp5=(m,i0,na,rt)=>`<div class="k5">${[['TOTAL TEST',m.total,i0,'#1d4ed8'],['PASS',m.pass,'check','#10b981'],['REJECTED',m.fail,'x','#ef4444'],['PENDING',m.pending,'clock','#f59e0b'],['RETEST',na?'–':m.retest,rt||'refresh','#6366f1']].map(([l,v,i,c])=>`<div style="--c:${c}"><span class="ki">${ic(i)}</span><small>${l}</small><b>${v??0}</b></div>`).join('')}</div>`;
+const dn=(t,m)=>{const T=m.total||0,p=T?m.pass*100/T:0,f=T?(m.fail||0)*100/T:0;return `<h3>${t}</h3><div class="donut" style="background:conic-gradient(#10b981 0 ${p}%,#ef4444 ${p}% ${p+f}%,${T?'#f59e0b':'#cfe7e4'} ${p+f}% 100%)"><span>${p.toFixed(2)}%</span></div><small><b style="color:#10b981">●</b> Pass ${m.pass||0}<br><b style="color:#ef4444">●</b> Fail ${m.fail||0}<br><b style="color:#f59e0b">●</b> Pending ${m.pending||0}</small>`};
+const fs=(g,c,l,o)=>`<label>${l}<select onchange="DQ.${g}.${c}=this.value;dqc()"><option value="">All</option>${(o||[]).map(v=>`<option ${DQ[g][c]===v?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
+function lc(ss,yt,xt){
+  yt=yt||'Jumlah data per hari';xt=xt||'Tanggal (bulan-hari)';
+  const ds=[...new Set(ss.flatMap(s=>s.d.map(r=>r.d)))].sort();if(!ds.length)return '<small>Belum ada data pada rentang tanggal</small>';
+  const W=460,H=260,L=46,Rg=16,T=24,B=54,pw=W-L-Rg,ph=H-T-B,m0=Math.max(1,...ss.flatMap(s=>s.d.map(r=>+r.n))),st=m0<=5?1:Math.ceil(m0/5),mx=Math.ceil(m0/st)*st,
+    X=i=>L+(ds.length<2?pw/2:i*pw/(ds.length-1)),Y=v=>T+ph-v*ph/mx,xs=Math.ceil(ds.length/8),le=Math.ceil(ds.length/12);
+  let g='';for(let v=0;v<=mx;v+=st)g+=`<line x1="${L}" x2="${W-Rg}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e2e8f3"/><text x="${L-6}" y="${Y(v)+4}" font-size="11" text-anchor="end" fill="#475569">${v}</text>`;
+  const sr=ss.map((s,si)=>{const q=Object.fromEntries(s.d.map(r=>[r.d,+r.n])),mxs=Math.max(0,...Object.values(q));
+    const pts=ds.map((d,i)=>[X(i),Y(q[d]||0),q[d]||0,d,i]);
+    return `<polyline fill="none" stroke="${s.c}" stroke-width="2.5" points="${pts.map(p=>p[0]+','+p[1]).join(' ')}"/>`+
+      pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${s.c}"><title>${s.n} – ${p[3]}: ${p[2]}</title></circle>`+((p[4]%le===0||p[4]===ds.length-1||p[2]===mxs)&&(p[2]>0||ds.length<=12)?`<text x="${p[0]}" y="${p[1]+(si?17:-8)}" font-size="12" font-weight="700" text-anchor="middle" fill="${s.c}" stroke="#fff" stroke-width="3" paint-order="stroke">${p[2]}</text>`:'')).join('')}).join('');
+  const lm=Math.floor((ds.length-1)/xs)*xs,xl=ds.map((d,i)=>i%xs&&!(i===ds.length-1&&ds.length-1-lm>=Math.ceil(xs*.6))?'':`<text x="${X(i)}" y="${T+ph+16}" font-size="11" text-anchor="middle" fill="#475569">${d.slice(5)}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}<line x1="${L}" x2="${L}" y1="${T}" y2="${T+ph}" stroke="#94a3b8"/><line x1="${L}" x2="${W-Rg}" y1="${T+ph}" y2="${T+ph}" stroke="#94a3b8"/>${sr}${xl}<text x="${L+pw/2}" y="${H-8}" font-size="11.5" font-weight="600" text-anchor="middle" fill="#0f1c3a">${xt}</text><text transform="translate(12 ${T+ph/2}) rotate(-90)" font-size="11.5" font-weight="600" text-anchor="middle" fill="#0f1c3a">${yt}</text></svg><small>${ss.map(s=>`<b style="color:${s.c}">●</b> ${s.n}`).join(' &nbsp; ')}</small><small style="display:block;color:#475569;margin-top:4px">Sumbu X: ${xt}. Sumbu Y: ${yt}. Angka di atas titik = nilai pada tanggal tersebut.</small>`;
+}
+const rtb=(rows,keys,k)=>{
+  if(!ses)return '<small>🔒 Login untuk melihat data terbaru</small>';if(!rows||!rows.length)return '<small>Belum ada data</small>';
+  const cs=keys.map(c=>[c,(MOD[k].a.find(f=>f[0]===c)||[0,c])[1]]);
+  return `<div class="wrap"><table><tr><th>No.</th>${cs.map(c=>`<th>${c[1]}</th>`).join('')}</tr>${rows.map((r,i)=>`<tr><td>${i+1}</td>${cs.map(c=>{const v=r[c[0]];return `<td>${v==='Pass'||v==='Fail'?tag(v):esc(v)}</td>`}).join('')}</tr>`).join('')}</table></div>`;
+};
+const RC=k=>ses?sb.from(MOD[k].t).select('*').order('created_at',{ascending:false}).limit(8).then(r=>r.data||[]):Promise.resolve([]);
+const PN=(n,t,sub,body)=>`<div class="pnl"><div class="ph"><span class="ico">${ic(n,34)}</span><div><h2>${t}</h2><small>${sub}</small></div></div>${body}</div>`;
+async function dqc(){
+  const nul=Promise.resolve(null),g=(k,f)=>sb.rpc('dash_panel',{k,d1:DS.d1,d2:DS.d2,f}).then(r=>r.data||{main:{},opts:[]});
+  let [a,b,c,d,r1,r2,r3,r4,gx]=await Promise.all([K==='mat'?g('mat',DQ.mat):nul,K==='fgt'?g('fgt',DQ.fgt):nul,K==='ocpt'?g('ocpt',{}):nul,
+    K==='ocpt'?sb.rpc('dash_tester',{d1:DS.d1,d2:DS.d2,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.data||{}):nul,
+    K==='mat'?RC('mat'):nul,K==='fgt'?RC('fgt'):nul,K==='ocpt'?RC('ocpt'):nul,K==='ocpt'?RC('tester'):nul,
+    K==='ocpt'?sb.rpc('dash_tester_gender',{d1:DS.d1||null,d2:DS.d2||null,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.data||{}):nul]);
+  const E={main:{},opts:[]};a=a||E;b=b||E;c=c||E;d=d||{};gx=gx||{};
+  const M=a.main,Fg=b.main,O=c.main,om=Object.assign({},...(a.opts||[])),ofg=Object.assign({},...(b.opts||[])),to=d.opts||{};
+  const P={
+  mat:()=>PN('flask','MATERIAL TESTING','Material Quality for Better Performance',kp5(M,'flask')+`<div class="pg"><div class="box fl">${fs('mat','material_type','Material Type',om.material_type)+fs('mat','article','Article No.',om.article)+fs('mat','supplier_name','Supplier Name',om.supplier_name)+fs('mat','material_number','Material Number',om.material_number)+fs('mat','colour','Colour',om.colour)+fs('mat','result','Result',om.result)}</div>
+    <div><div class="two"><div class="box">${dn('Result Overview',M)}</div><div class="box"><h3>Test by Material Type</h3>${hbar(M.groups)}</div></div>
+    <div class="box"><h3>Test Trend (Total)</h3>${lc([{n:'Total',c:'#1d4ed8',d:M.trend||[]}],'Jumlah test per hari')}</div></div></div>
+    <div class="box"><h3>Recent Material Testing Data</h3>${rtb(r1,['article','supplier_name','material_number','colour','material_description','lab_in_date','lab_out_date','lab_test_no','ftr_no'],'mat')}</div>`),
+  fgt:()=>PN('shoe','FGT','Fit for Growth, Fit for Market',kp5(Fg,'box',1,'hourglass')+`<div class="pg"><div class="box fl">${fs('fgt','season','Season',ofg.season)+fs('fgt','model_name','Model Name',ofg.model_name)+fs('fgt','article_no','Article No.',ofg.article_no)+fs('fgt','factory','Factory',ofg.factory)+fs('fgt','gender','Gender',ofg.gender)+fs('fgt','fgt_result','Result',ofg.fgt_result)}</div>
+    <div><div class="two"><div class="box">${dn('FGT Result',Fg)}</div><div class="box"><h3>By Category</h3>${hbar(Fg.groups)}</div></div>
+    <div class="box"><h3>FGT & CT Trend</h3>${lc([{n:'FGT',c:'#1d4ed8',d:Fg.trend||[]},{n:'CT',c:'#10b981',d:b.trend2||[]}],'Jumlah data per hari (FGT dan CT)')}</div></div></div>
+    <div class="box"><h3>Recent FGT Data</h3>${rtb(r2,['season','model_name','article_no','material_way_id','color','category','product_level','dev_type','qty','gender','factory'],'fgt')}</div>`),
+  ocpt:()=>PN('target','OCPT','Comfort - Fit - Performance',kp5(O,'shoe',1,'hourglass')+`<div class="pg"><div class="box fl">${fs('t','name','Name',to.name)+fs('t','dept','Dept',to.dept)+fs('t','tid','Tester ID',to.tid)}${ses?'':'<small>Filter Name & Tester ID hanya untuk staf (login)</small>'}</div>
+    <div><div class="two"><div class="box">${dn('OCPT Result',O)}</div><div><div class="box"><h3>Tester Gender</h3><div class="gn"><div style="color:#2563eb">${ic('male',34)}<b>${gx.man??d.man??d.male??0}</b>Male</div><div style="color:#ec4899">${ic('female',34)}<b>${gx.woman??d.woman??d.female??0}</b>Female</div></div></div><div class="box"><h3>By Dept</h3>${hbar(d.dept)}</div></div></div>
+    <div class="box"><h3>OCPT & Tester Pool Trend</h3>${lc([{n:'OCPT',c:'#1d4ed8',d:O.trend||[]},{n:'Tester Pool',c:'#10b981',d:d.trend||[]}],'Jumlah data per hari (OCPT dan Tester Pool)')}</div></div></div>
+    <div class="box"><h3>Recent OCPT Data</h3>${rtb(r3,['received_date','line','sd_document','po_number','model_name','gender','fit_test_size','pairs','article_number','style_color','season','test_level','result'],'ocpt')}</div>
+    <div class="box"><h3>Recent Tester Pool Data</h3>${rtb(r4,['name','dept','tester_id','gender','activities','footstrike_pattern','brannock_r','foot_length_r','brannock_l','foot_length_l','slip_on'],'tester')}</div>`)};
+  A(band('QUALITY & COMPLIANCE DASHBOARD',{mat:'Material Testing',fgt:'FGT',ocpt:'OCPT'}[K])+P[K]());
+}
+const DL={material_type:'Material Type',supplier_name:'Supplier',article:'Article',category:'Category',factory:'Factory',season:'Season',country:'Country',line:'Line',gender:'Gender',test_level:'Test Level',destination:'Destination'};
+const hbar=(rows,c)=>{const mx=Math.max(1,...(rows||[]).map(r=>r.n));return (rows||[]).map(r=>`<div class="hb"><span>${esc(r.g)} (${r.n})</span><div><i style="width:${r.n*100/mx}%;background:${c||'linear-gradient(90deg,#1d4ed8,#38bdf8)'}">${r.n}</i></div></div>`).join('')||'<small>Belum ada data</small>'};
+const G=(m,g)=>`<div style="display:grid;gap:10px">${m.a.filter(f=>f[6]===g).map(F).join('')}</div>`;
+const TP=m=>`<div class="tp"><div><h3>TESTER PROFILE</h3>${G(m,'P')}</div><div><h3>FOOT MEASUREMENT</h3>${G(m,'M')}<div class="tp2"><div class="sh"><h3>RIGHT FOOT</h3>${G(m,'R')}</div><div class="sh"><h3>LEFT FOOT</h3>${G(m,'L')}</div></div></div></div>`;
+async function tpool(){
+  const {data}=await sb.rpc('dash_tester'),x=data||{total:0,width:{}};
+  return `<h2 style="text-transform:uppercase;margin:6px 0 12px">Tester Pool</h2><div class="k3"><div class="box"><h4>TOTAL TESTER</h4><b>${x.total}</b></div><div class="box"><h4>AVG HEIGHT (CM)</h4><b>${x.h??'-'}</b></div><div class="box"><h4>AVG WEIGHT (KG)</h4><b>${x.w??'-'}</b></div></div>
+  <div class="dm"><div class="box"><h3>Foot Width</h3>${hbar(Object.entries(x.width||{}).map(([g,n])=>({g,n})))}</div><div class="box"><h3>By Dept</h3>${hbar(x.dept)}</div><div class="box"><h3>Tester Activities</h3>${hbar(x.act)}</div><div class="box"><h3>Slip On</h3>${hbar(x.slip)}</div><div class="box"><h3>Brannock UK Size (Right)</h3>${hbar(x.size)}</div><div class="box"><h3>Avg Foot Length</h3>Right: <b>${x.fl_r??'-'}</b> · Left: <b>${x.fl_l??'-'}</b></div></div>`;
+}
+async function dg(){
+  const {data}=await sb.rpc('dash_multi',{k:K,d1:DS.d1,d2:DS.d2}),m=(data&&data.main)||{total:0,pass:0,trend:[]},dims=(data&&data.dims)||[],tm=Math.max(1,...m.trend.map(g=>g.n));
+  const bx=d=>{const mx=Math.max(1,...d.rows.map(g=>g.n));return `<div class="box"><h3>By ${DL[d.dim]||d.dim}</h3>${d.rows.map(g=>`<div class="hb"><span>${esc(g.g)} (${g.n})</span><div><i style="width:${g.pass*100/mx}%;background:#1d4ed8">${g.pass||''}</i><i style="width:${(g.n-g.pass)*100/mx}%;background:#dc2626">${g.n-g.pass||''}</i></div></div>`).join('')||'<small>Belum ada data</small>'}</div>`};
+  A(band('QUALITY DASHBOARD',MOD[K].n.toUpperCase())+kpi(m.total,m.pass,m.total-m.pass)+`<div class="q2"><div><div class="box"><h3>Quality Rate</h3>${gauge(m.total?m.pass*100/m.total:0)}</div><div class="box"><h3>Trend per Day</h3>${vb(m.trend.map(r=>({l:r.d.slice(5),v:r.n,h:r.n*100/tm})))}</div></div>
+  <div><div class="dm">${dims.map(bx).join('')}</div><small><b style="color:#1d4ed8">●</b> Pass <b style="color:#dc2626">●</b> Fail</small></div></div>`+(K==='ocpt'?await tpool():''));
+}
+const F=([n,l,t='text',o,r,a])=>a?'':t==='check'?`<div><b style="font-size:12px;color:#475569">${l}</b><div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">${o.map(x=>`<span><input type="checkbox" name="mt_${x}" value="${x}" style="width:auto"> ${x}</span>`).join('')}</div></div>`:t==='radio'?`<div><b style="font-size:12px;color:#475569">${l}${r?' *':''}</b><div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">${o.map((x,i)=>`<span><input type="radio" name="${n}" value="${x}" ${i?'':'checked'} style="width:auto"> ${x}</span>`).join('')}</div></div>`:`<label>${l}${r?' *':''}${t==='select'?`<select name="${n}" ${r?'required':''}><option value="">Select</option>${o.map(x=>`<option>${x}</option>`).join('')}</select>`:t==='textarea'?`<textarea name="${n}" rows="3" ${r?'required':''}></textarea>`:`<input name="${n}" type="${t}" ${t==='number'?'step="any"':''} ${r?'required':''}>`}</label>`;
+function input(){
+  const m=MOD[tab];
+  A(`<div class="tabs">${Object.entries(MOD).filter(([k])=>k!=='kal'||INT).map(([k,v])=>`<button class="btn ${k===tab?'on':''}" onclick="tab='${k}';input()">${v.n}</button>`).join('')}</div>
+  <form class="box" id="f">${m.grp?TP(m):`<div class="g">${m.a.map(F).join('')}${tab==='fgt'?PF():''}</div>`}<button type="reset" class="btn o">Reset</button> <button class="btn">Save</button><p class="msg" id="m"></p></form>`);
+  const ra=$('[name=reject_area]');if(ra)ra.placeholder='Contoh: 2.5, 1.3 (pisahkan dengan koma, desimal pakai titik)';
+  {const e=$('[name=scope]');if(e&&!INT){[...e.options].filter(o=>o.value==='Internal').forEach(o=>o.remove());e.value='Eksternal';e.closest('label').style.display='none'}}
+  if(tab==='kal')kf($('#f'));
+  if(tab==='tester'){const a=$('[name=activities]'),s=$('[name=footstrike_pattern]'),w=s.closest('label'),u=()=>{const on=/running|lari/i.test(a.value);w.style.display=on?'':'none';s.required=on;if(!on)s.value=''};a.oninput=u;$('#f').onreset=()=>setTimeout(u);u()}
+  $('#f').onsubmit=async e=>{
+    e.preventDefault();
+    const o=Object.fromEntries([...new FormData(e.target)].map(([k,v])=>[k,v.trim()===''?null:v.trim()]));
+    ['reject_zone','reject_area','reject_intervals'].forEach(k=>{if(o[k])o[k]=o[k].split(',').map(s=>s.trim()).filter(Boolean).join(', ')});if(tab==='fgt')pr(o);if(tab==='kal')ck(o,$('#f'));
+    if(tab==='tester'){o.foot_narrow=o.foot_width==='Narrow Foot'?'Yes':null;o.foot_normal=o.foot_width==='Normal Foot'?'Yes':null;o.foot_wide=o.foot_width==='Wide Foot'?'Yes':null;delete o.foot_width}
+    const {error}=await sb.from(m.t).insert(o); // tanpa .select(): publik hanya boleh menulis
+    $('#m').className='msg '+(error?'er':'ok');$('#m').textContent=error?'Gagal: '+error.message:'Data tersimpan ✔';
+    if(!error)e.target.reset();
+  };
+}
+async function list(){
+  if(!ses)return lock();
+  let data=[],error=null;
+  for(let i=0;i<30000;i+=1000){let q=sb.from(MOD[K].t).select('*');if(!INT&&/^(bond|stock)$/.test(K))q=q.eq('scope','Eksternal');const r=await q.order('id',{ascending:false}).range(i,i+999);if(r.error){error=r.error;break}data=data.concat(r.data);if(r.data.length<1000)break}
+  if(error)return A('<p class="er">Akses ditolak / tabel belum dibuat.</p>');
+  ROWS=data;
+  A(`<div class="box"><div class="g"><label>Dari Tanggal<input id="d1" type="date" onchange="lf()"></label><label>Sampai Tanggal<input id="d2" type="date" onchange="lf()"></label><label>Cari<input id="q" oninput="lf()" placeholder="Cari data..."></label></div>
+  <button class="btn" onclick="xl()">⬇ Download Excel</button> <button class="btn o" onclick="tpl()">Template Excel</button> <label class="btn o" style="display:inline-block;cursor:pointer;color:var(--n)">⬆ Import Excel<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label> <small id="cnt"></small></div><div class="box wrap" id="tb"></div>`);lf();
+}
+function cur(){const m=MOD[K],a=$('#d1').value,b=$('#d2').value,q=$('#q').value.toLowerCase();return ROWS.filter(r=>{const d=m.d(r)||r.created_at.slice(0,10);return(!a||d>=a)&&(!b||d<=b)&&(!q||m.f.some(f=>String(r[f[0]]??'').toLowerCase().includes(q)))})}
+let PG=1,PS=100;
+const gp=p=>{PG=p;lf(1);const t=$('#tb');if(t)t.scrollIntoView({block:'start'})};
+const pgbar=n=>{const t=Math.max(1,Math.ceil(n/PS));if(PG>t)PG=t;const d1=PG<2?'disabled':'',d2=PG>=t?'disabled':'',sx='width:auto;display:inline-block';
+  return `<div class="pgb" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0"><button type="button" class="btn o" onclick="gp(1)" ${d1}>«</button><button type="button" class="btn o" onclick="gp(${PG-1})" ${d1}>‹ Prev</button><span>Halaman <select style="${sx}" onchange="gp(+this.value)">${Array.from({length:t},(_,i)=>`<option value="${i+1}" ${i+1===PG?'selected':''}>${i+1}</option>`).join('')}</select> dari ${t}</span><button type="button" class="btn o" onclick="gp(${PG+1})" ${d2}>Next ›</button><button type="button" class="btn o" onclick="gp(${t})" ${d2}>»</button><span style="margin-left:auto">Baris per halaman <select style="${sx}" onchange="PS=+this.value;PG=1;lf(1)">${[50,100,200,300,500].map(v=>`<option ${v===PS?'selected':''}>${v}</option>`).join('')}</select></span></div>`};
+function lf(keep){if(!keep)PG=1;const R=cur(),m=MOD[K],bar=pgbar(R.length),a=(PG-1)*PS,P=R.slice(a,a+PS);
+  $('#cnt').textContent=R.length+' data'+(R.length?' · menampilkan '+(a+1)+'–'+(a+P.length):'')+' (Excel berisi semua data)';
+  $('#tb').innerHTML=bar+`<div class="wrap"><table><tr><th>No.</th>${VF(m).map(f=>`<th>${f[1]}</th>`).join('')}<th style="position:sticky;right:0;background:#e3ebfa;text-align:center;box-shadow:-2px 0 4px rgba(0,0,0,.08)">Aksi</th></tr>${P.map((r,i)=>`<tr><td>${a+i+1}</td>${VF(m).map(f=>{const v=r[f[0]];return`<td${String(v??'').length>28?' class="wr"':''}>${['Pass','Fail','Eliminated','Active','Deactive'].includes(v)?tag(v):esc(v)}</td>`}).join('')}<td style="position:sticky;right:0;background:#fff;text-align:center;box-shadow:-2px 0 4px rgba(0,0,0,.08)">${K==='fgt'?`<button type="button" class="btn o" style="padding:3px 9px;font-size:12px" onclick="pd('${r.id}')">Detail</button> `:''}<button type="button" class="btn o" title="Edit data" style="padding:3px 9px;font-size:15px" onclick="ed('${r.id}')">✎</button></td></tr>`).join('')}</table></div>`+bar}
+const EDQ=()=>{const e=$('#emod');if(e)e.remove()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')EDQ()});
+function ed(id){
+  const m=MOD[K],r=ROWS.find(x=>String(x.id)===String(id));if(!r)return;EDQ();
+  const d=document.createElement('div');d.id='emod';
+  d.style.cssText='position:fixed;inset:0;background:rgba(15,28,58,.55);z-index:999;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px';
+  d.innerHTML=`<form class="box" id="ef" style="background:#fff;width:min(1000px,100%);margin:0"><h3 style="margin:0 0 12px">Edit Data – ${m.n}</h3>${m.grp?TP(m):`<div class="g">${m.a.map(F).join('')}${m===MOD.fgt?PF():''}</div>`}<div style="margin-top:12px;display:flex;gap:8px"><button type="button" class="btn o" onclick="EDQ()">Batal</button><button class="btn">Simpan Perubahan</button></div><p class="msg" id="em"></p></form>`;
+  document.body.appendChild(d);
+  const f=$('#ef');
+  m.a.forEach(([n,l,t])=>{
+    if(t==='radio')return;const el=f.elements.namedItem(n);if(!el)return;
+    let v=r[n];if(v==null){el.value='';return}
+    v=String(v);if(t==='date')v=v.slice(0,10);if(t==='month')v=v.slice(0,7);
+    if(t==='select'&&![...el.options].some(x=>x.value===v))el.add(new Option(v,v));
+    el.value=v});
+  if(m===MOD.kal)(r.maintenance||'').split(', ').forEach(v=>{const e=f.elements.namedItem('mt_'+v);if(e)e.checked=true});
+  if(m===MOD.kal)kf(f);
+  if(!INT){const e=f.elements.namedItem('scope');if(e){e.value='Eksternal';e.closest('label').style.display='none'}}
+  if(m===MOD.fgt)PRC.forEach(c=>{const e=f.elements.namedItem('proc_'+c);if(e&&r.proc_results&&r.proc_results[c])e.value=r.proc_results[c]});
+  if(m.grp){
+    const w=r.foot_wide==='Yes'?'Wide Foot':r.foot_narrow==='Yes'?'Narrow Foot':r.foot_normal==='Yes'?'Normal Foot':null;
+    f.querySelectorAll('[name=foot_width]').forEach(x=>x.checked=x.value===w);
+    const a=f.elements.namedItem('activities'),s=f.elements.namedItem('footstrike_pattern'),lb=s.closest('label'),
+      u=()=>{const on=/running|lari/i.test(a.value);lb.style.display=on?'':'none';s.required=on;if(!on)s.value=''};
+    a.oninput=u;u()}
+  f.onsubmit=async e=>{
+    e.preventDefault();const em=$('#em');
+    const o=Object.fromEntries([...new FormData(f)].map(([k,v])=>[k,v.trim()===''?null:v.trim()]));
+    ['reject_zone','reject_area','reject_intervals'].forEach(k=>{if(o[k])o[k]=o[k].split(',').map(s=>s.trim()).filter(Boolean).join(', ')});if(m===MOD.fgt)pr(o,r.proc_results);if(m===MOD.kal)ck(o,f);
+    if(m.grp){o.foot_narrow=o.foot_width==='Narrow Foot'?'Yes':null;o.foot_normal=o.foot_width==='Normal Foot'?'Yes':null;o.foot_wide=o.foot_width==='Wide Foot'?'Yes':null;delete o.foot_width}
+    const {data,error}=await sb.from(m.t).update(o).eq('id',r.id).select();
+    if(error){em.className='msg er';em.textContent='Gagal: '+error.message;return}
+    if(!data||!data.length){em.className='msg er';em.textContent='Tidak ada data yang berubah. Akun Anda kemungkinan belum punya izin UPDATE di Supabase (lihat policy tabel).';return}
+    const i=ROWS.findIndex(x=>String(x.id)===String(r.id));if(i>=0)ROWS[i]=data[0];
+    EDQ();lf(1)};
+}
+const PRC=['FGT-01','FGT-02','FGT-03','FGT-04','FGT-08','FGT-10','FGT-12','FGT-13','FGT-14','FGT-13+14','FGT-19','FGT-21','FGT-22','FGT-28','FGT-30','FGT-34','FGT-46','FGT-52','FGT-57','FGT-58','FGT-64','FGT-68','FGT-75','FGT-78'];
+const PF=()=>`<div style="grid-column:1/-1"><b>Report Result Testing</b><div class="g" style="margin-top:8px">${PRC.map(c=>`<label>${c}<input name="proc_${c}" placeholder="Hasil / catatan"></label>`).join('')}</div></div>`;
+const pr=(o,ed)=>{const p={};PRC.forEach(c=>{if(o['proc_'+c])p[c]=o['proc_'+c];delete o['proc_'+c]});if(Object.keys(p).length||ed)o.proc_results=p};
+const MD=h=>{EDQ();const d=document.createElement('div');d.id='emod';d.style.cssText='position:fixed;inset:0;background:rgba(15,28,58,.55);z-index:999;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px';d.innerHTML=h;document.body.appendChild(d)};
+function pd(id){const r=ROWS.find(x=>String(x.id)===String(id)),p=r.proc_results||{};
+  MD(`<div class="box" style="background:#fff;width:min(560px,100%);margin:0"><h3>Detail Test per Procedure – ${esc(r.article_no)} / ${esc(r.lab_no)}</h3><div class="wrap"><table><tr><th>Procedure</th><th>Result</th></tr>${PRC.map(c=>`<tr><td>${c}</td><td>${p[c]?(/^(pass|fail)$/i.test(p[c])?tag(/^pass$/i.test(p[c])?'Pass':'Fail'):esc(p[c])):'-'}</td></tr>`).join('')}</table></div><button class="btn" style="margin-top:10px" onclick="EDQ()">Tutup</button></div>`)}
+async function dd(k,v){
+  if(!/^(bond|stock)$/.test(K))return;v=v&&decodeURIComponent(v);const m=MOD[K],pad=n=>String(n).padStart(2,'0');
+  let q=SQ(sb.from(m.t).select('*')).order('test_date',{ascending:false}).limit(5000),t='Semua Data';
+  if(k==='m'){const y=DS.y;q=q.gte('test_date',y+'-'+pad(v)+'-01').lte('test_date',y+'-'+pad(v)+'-'+new Date(y,+v,0).getDate());t='Bulan '+pad(v)+'/'+y}
+  else{q=q.gte('test_date',DS.d1).lte('test_date',DS.d2);
+    if(k==='r'){q=q.ilike('reject_reason','%'+v+'%');t='Reject Reason: '+v}if(k==='l'){q=q.eq('line_no',v);t='Line '+v}
+    if(k==='p'){q=q.ilike('result','pass');t='Pass'}if(k==='f'){q=q.not('result','ilike','pass');t='Rejected'}}
+  if(DS.l)q=q.eq('line_no',DS.l);if(DS.a)q=q.eq('article_no',DS.a);if(DS.m)q=q.eq('model_name',DS.m);
+  MD(`<div class="box" style="background:#fff;width:min(1200px,100%);margin:0"><h3>${m.n} – ${esc(t)}</h3><p id="ddm">Memuat...</p><div class="wrap" id="ddt"></div><button class="btn" style="margin-top:10px" onclick="EDQ()">Tutup</button></div>`);
+  let {data,error}=await q;const p=$('#ddm');if(!p)return;if(!error&&k==='r')data=data.filter(r=>sp(r.reject_reason).includes(v.trim().toLowerCase()));
+  if(error||!data.length){p.textContent=error?'Gagal (perlu login): '+error.message:'Tidak ada data.';return}
+  p.textContent=data.length+' data'+(data.length>300?' (menampilkan 300 pertama)':'');
+  $('#ddt').innerHTML=`<table><tr><th>No.</th>${VF(m).map(f=>`<th>${f[1]}</th>`).join('')}</tr>${data.slice(0,300).map((r,i)=>`<tr><td>${i+1}</td>${VF(m).map(f=>`<td>${esc(r[f[0]])}</td>`).join('')}</tr>`).join('')}</table>`}
+const sp=s=>String(s||'').split(/[,;]+/).map(x=>x.trim().replace(/\s+/g,' ').toLowerCase()).filter(Boolean),tc=s=>s.replace(/\b\w/g,c=>c.toUpperCase());
+const kf=f=>{const fr=f.elements.namedItem('cal_freq'),tp=f.elements.namedItem('third_party'),u=()=>{const v=fr.value,ex=v==='External',all=!v;f.querySelectorAll('[name^=mt_]').forEach(x=>{const ok=all||(ex?/^(Quarterly|Yearly)$/.test(x.value):/^(Daily|Weekly|Monthly)$/.test(x.value));x.closest('span').style.display=ok?'':'none';if(!ok)x.checked=false});tp.closest('label').style.display=all||ex?'':'none';if(!all&&!ex)tp.value=''};fr.onchange=u;u()};
+const ck=(o,f)=>{f.querySelectorAll('[name^=mt_]').forEach(x=>delete o[x.name]);o.maintenance=[...f.querySelectorAll('[name^=mt_]:checked')].map(x=>x.value).join(', ')||null};
+async function dkal(){
+  const {data}=await sb.from('calibration_records').select('*').order('cal_date'),R=data||[],t0=new Date(new Date().toISOString().slice(0,10)),nx=r=>{if(!r.cal_date||!(r.cal_freq==='External'||/yearly/i.test(r.maintenance||'')))return null;const d=new Date(r.cal_date);d.setUTCFullYear(d.getUTCFullYear()+1);return d},dl=r=>{const n=nx(r);return n?Math.round((n-t0)/864e5):null},
+   c=f=>R.filter(r=>{const d=dl(r);return d!==null&&f(d)}).length,up=R.filter(r=>{const d=dl(r);return d!==null&&d<=60}).sort((a,b)=>dl(a)-dl(b));
+  A(band('KALIBRASI DASHBOARD','INTERNAL')+`<div class="k5">${[['TOTAL ALAT',R.length,'#1d4ed8'],['GOOD CONDITION',R.filter(r=>r.notes==='Good Condition').length,'#10b981'],['BROKEN',R.filter(r=>r.notes==='Broken').length,'#ef4444'],['JADWAL ≤ 30 HARI',c(d=>d>=0&&d<=30),'#f59e0b'],['TERLEWAT',c(d=>d<0),'#6366f1']].map(([l,v,k])=>`<div style="--c:${k}"><small>${l}</small><b>${v}</b></div>`).join('')}</div>
+  <div class="box wrap"><h3>Pemberitahuan: Jatuh Tempo Kalibrasi 3rd Party (Yearly) ≤ 60 Hari & Terlewat</h3><table><tr><th>Item Machine</th><th>Code</th><th>PIC</th><th>Frequency</th><th>3rd Party</th><th>Calibration Date</th><th>Jatuh Tempo</th><th>Sisa Hari</th><th>Notes</th></tr>${up.map(r=>{const d=dl(r);return`<tr><td>${esc(r.item_machine)}</td><td>${esc(r.code_machine)}</td><td>${esc(r.pic)}</td><td>${esc(r.cal_freq)}</td><td>${esc(r.third_party)}</td><td>${esc(r.cal_date)}</td><td>${nx(r).toISOString().slice(0,10)}</td><td style="font-weight:700;color:${d<0?'#ef4444':d<=7?'#f59e0b':'#1d4ed8'}">${d<0?'Terlewat '+(-d)+' hari':d+' hari'}</td><td>${esc(r.notes)}</td></tr>`}).join('')||'<tr><td colspan="9">Tidak ada jatuh tempo dalam 60 hari ke depan</td></tr>'}</table></div>`)}
+function xl(){const R=cur(),m=MOD[K];if(!R.length)return alert('Tidak ada data pada rentang ini');
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(R.map((r,i)=>({'No.':i+1,...Object.fromEntries(VF(m).map(f=>[f[1],r[f[0]]??''])),...(K==='fgt'?Object.fromEntries(PRC.map(c=>[c,(r.proc_results||{})[c]??''])):{})}))),m.n.slice(0,30));
+  XLSX.writeFile(wb,`${m.t}_${$('#d1').value||'semua'}_${$('#d2').value||'semua'}.xlsx`)}
+function tpl(){const m=MOD[K],wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([VF(m).map(f=>f[1]).concat(K==='fgt'?PRC:[])]),m.n.slice(0,30));XLSX.writeFile(wb,'template_'+m.t+'.xlsx')}
+const nd=s=>{s=String(s).trim();const t=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);return t?t[3]+'-'+t[2].padStart(2,'0')+'-'+t[1].padStart(2,'0'):s.slice(0,10)};
+async function imp(el){
+  const file=el.files[0];if(!file)return;const m=MOD[K],map={};
+  m.f.forEach(f=>{map[f[1].toLowerCase()]=f;map[f[0].toLowerCase()]=f});map['areas of reject (cm²)']=map['areas of reject (cm2)']=map['reject_area'];map['reject area (pisahkan koma)']=map['reject_zone']=m.f.find(f=>f[0]==='reject_zone')||map['reject area'];
+  const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}),raw=wb.SheetNames.flatMap(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{defval:''}));
+  const bad=Object.keys(Object.assign({},...raw)).filter(h=>!['no.','no'].includes(h.trim().toLowerCase())&&!map[h.trim().toLowerCase()]&&!(K==='fgt'&&PRC.some(c=>c.toLowerCase()===h.trim().toLowerCase())));
+  let rows=raw.map(r=>{const o={};for(const [h,v] of Object.entries(r)){const pc=K==='fgt'&&PRC.find(c=>c.toLowerCase()===h.trim().toLowerCase());if(pc){if(String(v).trim()!=='')(o.proc_results=o.proc_results||{})[pc]=String(v).trim();continue}const f=map[h.trim().toLowerCase()];if(!f||v==='')continue;let x;
+    if(f[2]==='date')x=typeof v==='number'?iso(new Date(Math.round((v-25569)*864e5))):nd(v);
+    else if(f[2]==='number')x=Number(String(v).replace(',','.'));
+    else{x=String(v).trim();if(f[2]==='select'){if(/^reject(ed)?$/i.test(x))x='Fail';const q=f[3].find(z=>z.toLowerCase()===x.toLowerCase());if(q)x=q}}
+    if(f[0]==='reject_zone'||f[0]==='reject_area'||f[0]==='reject_intervals')x=x.split(/[,;\/]/).map(s=>s.trim()).filter(Boolean).join(', ');if(x===''||Number.isNaN(x))continue;o[f[0]]=x}return o}).filter(o=>Object.keys(o).length);
+  if(!rows.length){el.value='';return alert('Tidak ada baris yang cocok. Gunakan header dari Template Excel.')}
+
+  if(/^(bond|stock)$/.test(K))rows.forEach(r=>r.scope=INT?(r.scope||SC):'Eksternal');
+  const KC=[...new Set(rows.flatMap(r=>Object.keys(r)))].filter(k=>k!=='proc_results'),upd=[],ty=k=>(m.a.find(a=>a[0]===k)||[])[2],nk=r=>KC.map(k=>{const v=r[k];if(v==null||v==='')return'';const t=ty(k);return t==='number'?String(Number(v)):t==='date'?String(v).slice(0,10):t==='month'?String(v).slice(0,7):String(v).trim().toLowerCase().replace(/\s+/g,' ')}).join('|'),ex={};
+  for(let a=0;;a+=1000){$('#cnt').textContent='Memeriksa data yang sudah ada... '+a;const {data,error}=await sb.from(m.t).select(KC.join(',')+(K==='fgt'?',id,proc_results':'')).order('id').range(a,a+999);if(error){el.value='';return alert('Gagal memeriksa data yang sudah ada: '+error.message)}data.forEach(r=>{const k=nk(r);(ex[k]=ex[k]||[]).push({id:r.id,has:!!r.proc_results&&Object.keys(r.proc_results).length>0})});if(data.length<1000)break}
+  const all=rows.length;rows=rows.filter(r=>{const k=nk(r),e=(ex[k]||[]).shift();if(e){if(r.proc_results&&!e.has)upd.push({id:e.id,proc_results:r.proc_results});return false}return true});const skip=all-rows.length;
+  if(!rows.length){for(const u of upd)await sb.from(m.t).update({proc_results:u.proc_results}).eq('id',u.id);el.value='';list();return alert('Semua '+all+' baris sudah ada di sistem, tidak ada yang diimpor.'+(upd.length?'\nHasil per procedure diperbarui pada '+upd.length+' baris.':''))}
+  if(!confirm('Import '+rows.length+' baris baru ke '+m.n+' ('+wb.SheetNames.length+' sheet dibaca)?'+(skip?'\n('+skip+' baris yang sama sudah ada dan dilewati)':'')+(bad.length?'\n\nKolom tidak dikenali (diabaikan):\n'+bad.join(', '):'')))return el.value='';
+  let ok=0;const errs=[],S=500;
+  for(let i=0;i<rows.length;i+=S){
+    $('#cnt').textContent='Mengimpor '+Math.min(i+S,rows.length)+' / '+rows.length+'...';
+    const c=rows.slice(i,i+S),{error}=await sb.from(m.t).insert(c);
+    if(!error){ok+=c.length;continue}
+    for(let j=0;j<c.length;j++){const {error:e2}=await sb.from(m.t).insert(c[j]);if(e2){if(errs.length<10)errs.push('Baris data ke-'+(i+j+1)+': '+e2.message)}else ok++}
+  }
+  for(const u of upd)await sb.from(m.t).update({proc_results:u.proc_results}).eq('id',u.id);el.value='';alert((upd.length?'Hasil per procedure diperbarui pada '+upd.length+' baris yang sudah ada.\n':'')+'Berhasil: '+ok+' dari '+rows.length+' baris baru.'+(skip?'\n'+skip+' baris sama dilewati.':'')+(errs.length?'\nGagal (maks 10 ditampilkan):\n'+errs.join('\n'):''));list();
+}
+async function master(){
+  if(!ses)return lock();
+  const {data,error}=await sb.from('master_materials').select('*').order('name');
+  if(error)return A('<p class="er">Akses ditolak.</p>');
+  A(`<form class="box" id="f"><div class="g">${[T('name','Material Name',1),S('material_type','Material Type',TY,1),T('color','Color')].map(F).join('')}</div><button class="btn">+ Add New</button><p class="msg" id="m"></p></form>
+  <div class="box wrap"><table><tr><th>No.</th><th>Material Name</th><th>Type</th><th>Color</th><th></th></tr>${data.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${esc(r.material_type)}</td><td>${esc(r.color)}</td><td><button class="btn d" onclick="del(${r.id})">Hapus</button></td></tr>`).join('')}</table></div>`);
+  $('#f').onsubmit=async e=>{e.preventDefault();const o=Object.fromEntries([...new FormData(e.target)].map(([k,v])=>[k,v.trim()||null])),{error}=await sb.from('master_materials').insert(o);
+    if(error){$('#m').className='msg er';$('#m').textContent='Gagal (hanya supervisor/admin): '+error.message}else master()};
+}
+async function del(id){if(!confirm('Hapus data ini?'))return;const {error}=await sb.from('master_materials').delete().eq('id',id);if(error)alert('Gagal: '+error.message);else master()}
+function login(){
+  A(`<form class="box" id="f" style="max-width:380px"><div class="g">${[['email','Username / Email','text',0,1],['password','Password','password',0,1]].map(F).join('')}</div><button class="btn">Masuk</button><p class="msg er" id="m"></p></form>`);
+  $('#f').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),{error}=await sb.auth.signInWithPassword({email:(u=>u.includes('@')?u:u+'@pca-lab.local')(String(f.get('email')).trim()),password:f.get('password')});if(error)$('#m').textContent='Gagal login: '+error.message};
+}
+const chk=async()=>{INT=ses?!!(await sb.rpc('is_internal')).data:false;render()};
+sb.auth.onAuthStateChange((_e,s)=>{const was=!!ses;ses=s;if(!s&&was)view='dmat';if(s&&view==='login')view='lmat';render();setTimeout(chk,0)});
+sb.auth.getSession().then(({data})=>{ses=data.session;render();chk()});
+</script></body></html>
