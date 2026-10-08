@@ -90,11 +90,13 @@ const uni=(a,b)=>[...new Set([...(a||[]),...(b||[])])].sort();
 async function QD(){
   const R=await Promise.all(SCS().map(s=>sb.rpc('dash_qc',{t:MOD[K].t,d1:DS.d1,d2:DS.d2,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:s}).then(r=>({s,d:r.data||null}))));
   const by={},re={},li={},tp={},o={lines:[],articles:[],models:[]};let total=0,pass=0;
+  const RA=await Promise.all(SCS().map(s=>sb.rpc('dash_qc_reasons',{t:MOD[K].t,d1:DS.d1,d2:DS.d2,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:s}))),RN=RA.every(r=>!r.error&&Array.isArray(r.data));
   R.forEach(({s,d})=>{d=d||{};by[s]={total:d.total||0,pass:d.pass||0};total+=d.total||0;pass+=d.pass||0;
-    (d.reasons||[]).forEach(r=>{const k=r.reason+'|'+r.zone;(re[k]=re[k]||{reason:r.reason,zone:r.zone,n:0}).n+=r.n});
+    if(!RN)(d.reasons||[]).forEach(r=>{const k=r.reason+'|'+r.zone;(re[k]=re[k]||{reason:r.reason,zone:r.zone,n:0}).n+=r.n});
     (d.lines||[]).forEach(r=>{const e=li[r.l]=li[r.l]||{l:r.l,total:0,pass:0};e.total+=r.total;e.pass+=r.pass});
     (d.tops||[]).forEach(r=>{const k=[r.article_no,r.model_name,r.po_no].join('|'),e=tp[k]=tp[k]||{article_no:r.article_no,model_name:r.model_name,po_no:r.po_no,n:0};e.n+=r.n});
     const q=d.opts||{};o.lines=uni(o.lines,q.lines);o.articles=uni(o.articles,q.articles);o.models=uni(o.models,q.models)});
+  if(RN)RA.forEach(r=>r.data.forEach(x=>{const k=x.reason+'|'+x.area;(re[k]=re[k]||{reason:x.reason,zone:x.area,n:0}).n+=Number(x.n)}));
   return{by,data:{total,pass,reasons:Object.values(re),lines:Object.values(li).sort((a,b)=>String(a.l).localeCompare(String(b.l),undefined,{numeric:true})),tops:Object.values(tp).sort((a,b)=>b.n-a.n).slice(0,8),opts:o}};
 }
 async function QM(){
@@ -109,12 +111,12 @@ async function dq(){
   const x=data||{total:0,pass:0,reasons:[],lines:[],tops:[],opts:{lines:[],articles:[],models:[]}},o=x.opts||{lines:[],articles:[],models:[]},rate=x.total?x.pass*100/x.total:0;
   const sel=(l,k,a)=>`<label>${l}<select onchange="DS.${k}=this.value;render()"><option value="">All</option>${(a||[]).map(v=>`<option ${DS[k]===v?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
   const rs={};(x.reasons||[]).forEach(r=>{sp(r.reason).forEach(pt=>{const k=tc(pt),e=rs[k]=rs[k]||{tot:0,z:{}};e.tot+=r.n;e.z[r.zone]=(e.z[r.zone]||0)+r.n})});
-  const top=Object.entries(rs).sort((a,b)=>b[1].tot-a[1].tot).slice(0,5),mx=Math.max(1,...top.map(e=>e[1].tot));const zs=[...new Set((x.reasons||[]).map(r=>r.zone))],PAL=['#0f1c3a','#1d4ed8','#94a3b8','#60a5fa','#f59e0b','#10b981','#a855f7'],ZC=Object.fromEntries(zs.map((z,i)=>[z,PAL[i%PAL.length]]));
+  const top=Object.entries(rs).sort((a,b)=>b[1].tot-a[1].tot).slice(0,5),mx=Math.max(1,...top.map(e=>e[1].tot));const AT={};(x.reasons||[]).forEach(r=>{AT[r.zone]=(AT[r.zone]||0)+r.n});const PAL=['#1d4ed8','#ef4444','#10b981','#f59e0b','#a855f7','#06b6d4','#ec4899','#84cc16','#f97316','#0f1c3a','#14b8a6'],nm=Object.keys(AT).filter(z=>z!=='-').sort((a,b)=>AT[b]-AT[a]||parseFloat(a)-parseFloat(b)),zs=[...nm,...(AT['-']?['-']:[])],ZC={};zs.forEach((z,i)=>ZC[z]=z!=='-'&&i<PAL.length?PAL[i]:'#94a3b8');const lg=(c,t)=>`<span style="margin-right:14px;white-space:nowrap"><b style="color:${c}">●</b> ${t}</span>`,LG=nm.slice(0,PAL.length).map(z=>lg(ZC[z],esc(z))).join('')+(nm.length>PAL.length?lg('#94a3b8','Lainnya'):'')+(AT['-']?lg('#94a3b8','Tanpa data area'):'');
   A(band('DAILY QUALITY DASHBOARD',MOD[K].n.toUpperCase()+' ASSEMBLING'+(SC==='Internal'?' – INTERNAL + EKSTERNAL':''))+`<div class="qg">
   <div class="box"><h3>Filter</h3><div style="display:grid;gap:12px">${sel('LINE NO.','l',o.lines)+sel('ARTICLE NO.','a',o.articles)+sel('MODEL NAME','m',o.models)}</div></div>
   <div>${kpi(x.total,x.pass,x.total-x.pass)}${SC==='Internal'?`<div class="box" style="padding:8px 14px"><small>Sumber data dashboard: <b>Internal ${by.Internal.total}</b> test (pass ${by.Internal.pass}) + <b>Eksternal ${by.Eksternal.total}</b> test (pass ${by.Eksternal.pass}) = <b>${x.total}</b> test</small></div>`:''}
-  <div class="box"><h3>Top 5 Rejected Reason & Area</h3>${top.map(([k,v])=>`<div class="hb" style="cursor:pointer" onclick="dd('r','${encodeURIComponent(k)}')"><span>${esc(k)}</span><div>${Object.entries(v.z).map(([z,n])=>`<i style="width:${n*100/mx}%;background:${ZC[z]||'#cbd5e1'}">${n}</i>`).join('')}</div></div>`).join('')||'<small>Tidak ada reject</small>'}
-  <small>${Object.entries(ZC).map(([z,c])=>`<b style="color:${c}">●</b> ${z}`).join(' &nbsp; ')}</small></div>
+  <div class="box"><h3>Top 5 Rejected Reason & Area</h3>${top.map(([k,v])=>`<div class="hb" style="cursor:pointer" onclick="dd('r','${encodeURIComponent(k)}')"><span>${esc(k)}</span><div>${zs.filter(z=>v.z[z]).map(z=>`<i title="Area of Reject ${esc(z)} cm²: ${v.z[z]}" style="width:${v.z[z]*100/mx}%;background:${ZC[z]}">${v.z[z]}</i>`).join('')}</div></div>`).join('')||'<small>Tidak ada reject</small>'}
+  <small><b>Areas of Reject (cm²):</b> ${LG||'-'}</small></div>
   </div>
   <div><div class="box"><h3>Quality Rate</h3>${gauge(rate)}</div>
   </div><div class="qb"><div class="box"><h3>Quality Rate per Line</h3>${vb((x.lines||[]).map(r=>({l:r.l,v:(r.pass*100/r.total).toFixed(1)+'%',h:r.pass*100/r.total,c:`dd('l','${encodeURIComponent(r.l)}')`})))}${cap('Line No.','Quality Rate (%); angka di atas batang = nilai %')}</div><div class="box wrap"><h3>Top Articles & POs by Rejects</h3><table><tr><th>Article</th><th>Model</th><th>PO No.</th><th>Rejects</th></tr>${(x.tops||[]).map(r=>`<tr><td>${esc(r.article_no)}</td><td>${esc(r.model_name)}</td><td>${esc(r.po_no)}</td><td>${r.n}</td></tr>`).join('')}<tr><th colspan="3">Total</th><th>${x.total-x.pass}</th></tr></table></div></div><div class="box" style="grid-column:1/-1">${MONTHLY}</div></div>`);
