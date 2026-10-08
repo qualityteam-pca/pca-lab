@@ -68,7 +68,7 @@ Object.values(MOD).forEach(m=>{m.a=m.f;m.f=m.f.filter(f=>!f[7])});
 const IC={flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 14h9"/>',shoe:'<path d="M3 17v-4l4-1 3-4 3 2 2 1c3 .5 6 1.5 6 4v2H3z"/><path d="M3 17h18M9 10l1.5 2M12 11.5l1.2 1.6"/>',target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 1v5M12 18v5M1 12h5M18 12h5"/>',check:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',x:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',hourglass:'<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',refresh:'<path d="M20 11a8 8 0 0 0-14-4M4 4v4h4M4 13a8 8 0 0 0 14 4M20 20v-4h-4"/>',box:'<path d="M12 2 3 7v10l9 5 9-5V7l-9-5zM3 7l9 5 9-5M12 12v10"/>',male:'<circle cx="12" cy="5" r="3"/><path d="M8 22v-8l-2-1v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3l-2 1v8"/>',female:'<circle cx="12" cy="5" r="3"/><path d="m12 9-5 9h10l-5-9zM10 18v4M14 18v4"/>',link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',layers:'<path d="m12 3 9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17l9 5 9-5"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/>',db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 5a3 3 0 0 1 0 6M18 15c2 .7 3 2.2 3 5"/>',out:'<path d="M9 21H5V3h4M16 17l5-5-5-5M21 12H9"/>'};
 const ic=(n,s=20)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 const NAVG=[['DASHBOARD',[['dmat','Material Testing','flask'],['dfgt','FGT','shoe'],['docpt','OCPT & Tester Pool','target'],['dbond','Bonding','link'],['dstock','Stockfitting','layers']]],['INPUT (PUBLIK)',[['input','Input Data','edit']]],['DATA (LOGIN)',[['lmat','Material Testing','flask'],['lfgt','FGT','shoe'],['lbond','Bonding','link'],['lstock','Stockfitting','layers'],['locpt','OCPT','target'],['ltester','Tester Pool','users'],['master','Master Data','db']]]];
-const NAVI=[['DASHBOARD INTERNAL',[['dibond','Bonding','link'],['distock','Stockfitting','layers'],['dkal','Kalibrasi','target']]],['DATA INTERNAL',[['lkal','Kalibrasi','db']]]],SQ=q=>/^(bond|stock)$/.test(K)?q.eq('scope',SC):q,VF=m=>INT?m.f:m.f.filter(f=>f[0]!=='scope');
+const NAVI=[['DASHBOARD INTERNAL',[['dibond','Bonding','link'],['distock','Stockfitting','layers'],['dkal','Kalibrasi','target']]],['DATA INTERNAL',[['lkal','Kalibrasi','db']]]],SQ=q=>/^(bond|stock)$/.test(K)&&!/^di(bond|stock)$/.test(view)?q.eq('scope',SC):q,VF=m=>INT?m.f:m.f.filter(f=>f[0]!=='scope');
 const go=v=>{view=v;SCR=1;render()},lock=()=>A(`<div class="box"><p>Halaman ini hanya untuk akun terdaftar.</p><button class="btn" onclick="go('login')">Login</button></div>`);
 async function render(){
   SC=/^[dl]i(bond|stock)$/.test(view)?'Internal':'Eksternal';const vv=view.replace(/^([dl])i/,'$1'),isD=/^d(mat|bond|stock|fgt|ocpt|kal)$/.test(vv),isL=/^l(mat|bond|stock|fgt|ocpt|tester|kal)$/.test(vv);if(isD||isL)K=vv.slice(1);
@@ -80,26 +80,44 @@ async function render(){
   ({input,master,login})[view]();
 }
 const gauge=p=>`<svg viewBox="0 0 200 115"><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="#e2e8f3" stroke-width="24"/><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="#0f1c3a" stroke-width="24" pathLength="100" stroke-dasharray="${p} 100"/><text x="100" y="95" text-anchor="middle" font-size="26" font-weight="700" fill="#0f1c3a">${p.toFixed(2)}%</text></svg>`;
+const cap=(x,y)=>`<small style="display:block;color:#475569;margin-top:6px">Sumbu X: ${x} · Sumbu Y: ${y}</small>`;
 const vb=a=>`<div class="vb">${a.map(x=>`<div${x.c?` onclick="${x.c}" style="cursor:pointer"`:''}>${x.v}<i style="height:${x.h}%"></i>${esc(x.l)}</div>`).join('')||'<small>Belum ada data</small>'}</div>`;
 const preset=v=>{const n=new Date(),y=n.getFullYear();DS.d1=v==='m'?iso(new Date(Date.UTC(y,n.getMonth(),1))):v==='30'?iso(new Date(Date.now()-30*864e5)):v==='y'?y+'-01-01':'2000-01-01';DS.d2=iso(n);render()};
 const band=(t,sub)=>`<div class="band"><img src="${LOGO}"><div><h1>${t}</h1><h3>${sub}</h3></div><div class="dr"><b>DATE RANGE</b><input type="date" value="${DS.d1}" onchange="DS.d1=this.value;render()"><input type="date" value="${DS.d2}" onchange="DS.d2=this.value;render()"><select onchange="preset(this.value)"><option value="">Rentang cepat...</option><option value="m">Bulan ini</option><option value="30">30 hari terakhir</option><option value="y">Tahun ini</option><option value="a">Semua data</option></select></div></div>`;
 const kpi=(a,b,c)=>`<div class="k3"><div class="box" style="cursor:pointer" onclick="dd('t')"><h4>TOTAL TEST</h4><b>${a}</b></div><div class="box" style="cursor:pointer" onclick="dd('p')"><h4>PASS</h4><b>${b}</b></div><div class="box" style="cursor:pointer" onclick="dd('f')"><h4>REJECTED</h4><b>${c}</b></div></div>`;
+const SCS=()=>SC==='Internal'?['Internal','Eksternal']:[SC];
+const uni=(a,b)=>[...new Set([...(a||[]),...(b||[])])].sort();
+async function QD(){
+  const R=await Promise.all(SCS().map(s=>sb.rpc('dash_qc',{t:MOD[K].t,d1:DS.d1,d2:DS.d2,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:s}).then(r=>({s,d:r.data||null}))));
+  const by={},re={},li={},tp={},o={lines:[],articles:[],models:[]};let total=0,pass=0;
+  R.forEach(({s,d})=>{d=d||{};by[s]={total:d.total||0,pass:d.pass||0};total+=d.total||0;pass+=d.pass||0;
+    (d.reasons||[]).forEach(r=>{const k=r.reason+'|'+r.zone;(re[k]=re[k]||{reason:r.reason,zone:r.zone,n:0}).n+=r.n});
+    (d.lines||[]).forEach(r=>{const e=li[r.l]=li[r.l]||{l:r.l,total:0,pass:0};e.total+=r.total;e.pass+=r.pass});
+    (d.tops||[]).forEach(r=>{const k=[r.article_no,r.model_name,r.po_no].join('|'),e=tp[k]=tp[k]||{article_no:r.article_no,model_name:r.model_name,po_no:r.po_no,n:0};e.n+=r.n});
+    const q=d.opts||{};o.lines=uni(o.lines,q.lines);o.articles=uni(o.articles,q.articles);o.models=uni(o.models,q.models)});
+  return{by,data:{total,pass,reasons:Object.values(re),lines:Object.values(li).sort((a,b)=>String(a.l).localeCompare(String(b.l),undefined,{numeric:true})),tops:Object.values(tp).sort((a,b)=>b.n-a.n).slice(0,8),opts:o}};
+}
+async function QM(){
+  const R=await Promise.all(SCS().map(s=>sb.rpc('dash_qc_monthly',{t:MOD[K].t,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:s}).then(r=>r.data||[]))),m={};
+  R.flat().forEach(r=>{const k=r.y+'-'+r.m,e=m[k]=m[k]||{y:r.y,m:r.m,total:0,pass:0};e.total+=r.total;e.pass+=r.pass});
+  return Object.values(m);
+}
 async function dq(){
-  const {data}=await sb.rpc('dash_qc',{t:MOD[K].t,d1:DS.d1,d2:DS.d2,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:SC});
-  const mo=(await sb.rpc('dash_qc_monthly',{t:MOD[K].t,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:SC})).data||[],MN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],ys=[...new Set([...mo.map(r=>r.y),new Date().getFullYear()])].sort(),yy=DS.y=ys.includes(DS.y)?DS.y:new Date().getFullYear();
-  const MONTHLY=`<h3>Quality Rate Monthly <select style="width:auto;display:inline-block;margin-left:8px" onchange="DS.y=+this.value;render()">${ys.map(y=>`<option ${y===yy?'selected':''}>${y}</option>`).join('')}</select></h3>${vb(MN.map((n,i)=>{const r=mo.find(z=>z.y===yy&&z.m===i+1),p=r&&r.total?r.pass*100/r.total:0;return{l:n,v:r?p.toFixed(1)+'%':'-',h:p,c:r?`dd('m',${i+1})`:''}}))}`;
+  const {data,by}=await QD();
+  const mo=await QM(),MN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],ys=[...new Set([...mo.map(r=>r.y),new Date().getFullYear()])].sort(),yy=DS.y=ys.includes(DS.y)?DS.y:new Date().getFullYear();
+  const MONTHLY=`<h3>Quality Rate Monthly <select style="width:auto;display:inline-block;margin-left:8px" onchange="DS.y=+this.value;render()">${ys.map(y=>`<option ${y===yy?'selected':''}>${y}</option>`).join('')}</select></h3>${vb(MN.map((n,i)=>{const r=mo.find(z=>z.y===yy&&z.m===i+1),p=r&&r.total?r.pass*100/r.total:0;return{l:n,v:r?p.toFixed(1)+'%':'-',h:p,c:r?`dd('m',${i+1})`:''}}))}${cap('bulan','Quality Rate (%) = Pass ÷ Total test; angka di atas batang = nilai %')}`;
   const x=data||{total:0,pass:0,reasons:[],lines:[],tops:[],opts:{lines:[],articles:[],models:[]}},o=x.opts||{lines:[],articles:[],models:[]},rate=x.total?x.pass*100/x.total:0;
   const sel=(l,k,a)=>`<label>${l}<select onchange="DS.${k}=this.value;render()"><option value="">All</option>${(a||[]).map(v=>`<option ${DS[k]===v?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
   const rs={};(x.reasons||[]).forEach(r=>{sp(r.reason).forEach(pt=>{const k=tc(pt),e=rs[k]=rs[k]||{tot:0,z:{}};e.tot+=r.n;e.z[r.zone]=(e.z[r.zone]||0)+r.n})});
   const top=Object.entries(rs).sort((a,b)=>b[1].tot-a[1].tot).slice(0,5),mx=Math.max(1,...top.map(e=>e[1].tot));const zs=[...new Set((x.reasons||[]).map(r=>r.zone))],PAL=['#0f1c3a','#1d4ed8','#94a3b8','#60a5fa','#f59e0b','#10b981','#a855f7'],ZC=Object.fromEntries(zs.map((z,i)=>[z,PAL[i%PAL.length]]));
-  A(band('DAILY QUALITY DASHBOARD',MOD[K].n.toUpperCase()+' ASSEMBLING'+(SC==='Internal'?' – INTERNAL':''))+`<div class="qg">
+  A(band('DAILY QUALITY DASHBOARD',MOD[K].n.toUpperCase()+' ASSEMBLING'+(SC==='Internal'?' – INTERNAL + EKSTERNAL':''))+`<div class="qg">
   <div class="box"><h3>Filter</h3><div style="display:grid;gap:12px">${sel('LINE NO.','l',o.lines)+sel('ARTICLE NO.','a',o.articles)+sel('MODEL NAME','m',o.models)}</div></div>
-  <div>${kpi(x.total,x.pass,x.total-x.pass)}
+  <div>${kpi(x.total,x.pass,x.total-x.pass)}${SC==='Internal'?`<div class="box" style="padding:8px 14px"><small>Sumber data dashboard: <b>Internal ${by.Internal.total}</b> test (pass ${by.Internal.pass}) + <b>Eksternal ${by.Eksternal.total}</b> test (pass ${by.Eksternal.pass}) = <b>${x.total}</b> test</small></div>`:''}
   <div class="box"><h3>Top 5 Rejected Reason & Area</h3>${top.map(([k,v])=>`<div class="hb" style="cursor:pointer" onclick="dd('r','${encodeURIComponent(k)}')"><span>${esc(k)}</span><div>${Object.entries(v.z).map(([z,n])=>`<i style="width:${n*100/mx}%;background:${ZC[z]||'#cbd5e1'}">${n}</i>`).join('')}</div></div>`).join('')||'<small>Tidak ada reject</small>'}
   <small>${Object.entries(ZC).map(([z,c])=>`<b style="color:${c}">●</b> ${z}`).join(' &nbsp; ')}</small></div>
   </div>
   <div><div class="box"><h3>Quality Rate</h3>${gauge(rate)}</div>
-  </div><div class="qb"><div class="box"><h3>Quality Rate per Line</h3>${vb((x.lines||[]).map(r=>({l:r.l,v:(r.pass*100/r.total).toFixed(1)+'%',h:r.pass*100/r.total,c:`dd('l','${encodeURIComponent(r.l)}')`})))}</div><div class="box wrap"><h3>Top Articles & POs by Rejects</h3><table><tr><th>Article</th><th>Model</th><th>PO No.</th><th>Rejects</th></tr>${(x.tops||[]).map(r=>`<tr><td>${esc(r.article_no)}</td><td>${esc(r.model_name)}</td><td>${esc(r.po_no)}</td><td>${r.n}</td></tr>`).join('')}<tr><th colspan="3">Total</th><th>${x.total-x.pass}</th></tr></table></div></div><div class="box" style="grid-column:1/-1">${MONTHLY}</div></div>`);
+  </div><div class="qb"><div class="box"><h3>Quality Rate per Line</h3>${vb((x.lines||[]).map(r=>({l:r.l,v:(r.pass*100/r.total).toFixed(1)+'%',h:r.pass*100/r.total,c:`dd('l','${encodeURIComponent(r.l)}')`})))}${cap('Line No.','Quality Rate (%); angka di atas batang = nilai %')}</div><div class="box wrap"><h3>Top Articles & POs by Rejects</h3><table><tr><th>Article</th><th>Model</th><th>PO No.</th><th>Rejects</th></tr>${(x.tops||[]).map(r=>`<tr><td>${esc(r.article_no)}</td><td>${esc(r.model_name)}</td><td>${esc(r.po_no)}</td><td>${r.n}</td></tr>`).join('')}<tr><th colspan="3">Total</th><th>${x.total-x.pass}</th></tr></table></div></div><div class="box" style="grid-column:1/-1">${MONTHLY}</div></div>`);
 }
 let FT;
 function fitDash(){
@@ -116,10 +134,18 @@ let SCR=0;const DQ={mat:{},fgt:{},t:{}};
 const kp5=(m,i0,na,rt)=>`<div class="k5">${[['TOTAL TEST',m.total,i0,'#1d4ed8'],['PASS',m.pass,'check','#10b981'],['REJECTED',m.fail,'x','#ef4444'],['PENDING',m.pending,'clock','#f59e0b'],['RETEST',na?'–':m.retest,rt||'refresh','#6366f1']].map(([l,v,i,c])=>`<div style="--c:${c}"><span class="ki">${ic(i)}</span><small>${l}</small><b>${v??0}</b></div>`).join('')}</div>`;
 const dn=(t,m)=>{const T=m.total||0,p=T?m.pass*100/T:0,f=T?(m.fail||0)*100/T:0;return `<h3>${t}</h3><div class="donut" style="background:conic-gradient(#10b981 0 ${p}%,#ef4444 ${p}% ${p+f}%,${T?'#f59e0b':'#cfe7e4'} ${p+f}% 100%)"><span>${p.toFixed(2)}%</span></div><small><b style="color:#10b981">●</b> Pass ${m.pass||0}<br><b style="color:#ef4444">●</b> Fail ${m.fail||0}<br><b style="color:#f59e0b">●</b> Pending ${m.pending||0}</small>`};
 const fs=(g,c,l,o)=>`<label>${l}<select onchange="DQ.${g}.${c}=this.value;dqc()"><option value="">All</option>${(o||[]).map(v=>`<option ${DQ[g][c]===v?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
-function lc(ss){
+function lc(ss,yt,xt){
+  yt=yt||'Jumlah data per hari';xt=xt||'Tanggal (bulan-hari)';
   const ds=[...new Set(ss.flatMap(s=>s.d.map(r=>r.d)))].sort();if(!ds.length)return '<small>Belum ada data pada rentang tanggal</small>';
-  const W=380,H=150,P=24,mx=Math.max(1,...ss.flatMap(s=>s.d.map(r=>r.n))),X=i=>P+i*(W-2*P)/Math.max(1,ds.length-1),Y=v=>H-P-v*(H-2*P)/mx,st=Math.ceil(ds.length/6);
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${ss.map(s=>{const q=Object.fromEntries(s.d.map(r=>[r.d,r.n]));return `<polyline fill="none" stroke="${s.c}" stroke-width="2.5" points="${ds.map((d,i)=>X(i)+','+Y(q[d]||0)).join(' ')}"/>`}).join('')}${ds.map((d,i)=>i%st?'':`<text x="${X(i)}" y="${H-6}" font-size="9" text-anchor="middle" fill="#64748b">${d.slice(5)}</text>`).join('')}</svg><small>${ss.map(s=>`<b style="color:${s.c}">●</b> ${s.n}`).join(' &nbsp; ')}</small>`;
+  const W=460,H=260,L=46,Rg=16,T=24,B=54,pw=W-L-Rg,ph=H-T-B,m0=Math.max(1,...ss.flatMap(s=>s.d.map(r=>+r.n))),st=m0<=5?1:Math.ceil(m0/5),mx=Math.ceil(m0/st)*st,
+    X=i=>L+(ds.length<2?pw/2:i*pw/(ds.length-1)),Y=v=>T+ph-v*ph/mx,xs=Math.ceil(ds.length/8),le=Math.ceil(ds.length/12);
+  let g='';for(let v=0;v<=mx;v+=st)g+=`<line x1="${L}" x2="${W-Rg}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e2e8f3"/><text x="${L-6}" y="${Y(v)+4}" font-size="11" text-anchor="end" fill="#475569">${v}</text>`;
+  const sr=ss.map((s,si)=>{const q=Object.fromEntries(s.d.map(r=>[r.d,+r.n])),mxs=Math.max(0,...Object.values(q));
+    const pts=ds.map((d,i)=>[X(i),Y(q[d]||0),q[d]||0,d,i]);
+    return `<polyline fill="none" stroke="${s.c}" stroke-width="2.5" points="${pts.map(p=>p[0]+','+p[1]).join(' ')}"/>`+
+      pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${s.c}"><title>${s.n} – ${p[3]}: ${p[2]}</title></circle>`+((p[4]%le===0||p[4]===ds.length-1||p[2]===mxs)&&(p[2]>0||ds.length<=12)?`<text x="${p[0]}" y="${p[1]+(si?17:-8)}" font-size="12" font-weight="700" text-anchor="middle" fill="${s.c}" stroke="#fff" stroke-width="3" paint-order="stroke">${p[2]}</text>`:'')).join('')}).join('');
+  const lm=Math.floor((ds.length-1)/xs)*xs,xl=ds.map((d,i)=>i%xs&&!(i===ds.length-1&&ds.length-1-lm>=Math.ceil(xs*.6))?'':`<text x="${X(i)}" y="${T+ph+16}" font-size="11" text-anchor="middle" fill="#475569">${d.slice(5)}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}<line x1="${L}" x2="${L}" y1="${T}" y2="${T+ph}" stroke="#94a3b8"/><line x1="${L}" x2="${W-Rg}" y1="${T+ph}" y2="${T+ph}" stroke="#94a3b8"/>${sr}${xl}<text x="${L+pw/2}" y="${H-8}" font-size="11.5" font-weight="600" text-anchor="middle" fill="#0f1c3a">${xt}</text><text transform="translate(12 ${T+ph/2}) rotate(-90)" font-size="11.5" font-weight="600" text-anchor="middle" fill="#0f1c3a">${yt}</text></svg><small>${ss.map(s=>`<b style="color:${s.c}">●</b> ${s.n}`).join(' &nbsp; ')}</small><small style="display:block;color:#475569;margin-top:4px">Sumbu X: ${xt}. Sumbu Y: ${yt}. Angka di atas titik = nilai pada tanggal tersebut.</small>`;
 }
 const rtb=(rows,keys,k)=>{
   if(!ses)return '<small>🔒 Login untuk melihat data terbaru</small>';if(!rows||!rows.length)return '<small>Belum ada data</small>';
@@ -139,15 +165,15 @@ async function dqc(){
   const P={
   mat:()=>PN('flask','MATERIAL TESTING','Material Quality for Better Performance',kp5(M,'flask')+`<div class="pg"><div class="box fl">${fs('mat','material_type','Material Type',om.material_type)+fs('mat','article','Article No.',om.article)+fs('mat','supplier_name','Supplier Name',om.supplier_name)+fs('mat','material_number','Material Number',om.material_number)+fs('mat','colour','Colour',om.colour)+fs('mat','result','Result',om.result)}</div>
     <div><div class="two"><div class="box">${dn('Result Overview',M)}</div><div class="box"><h3>Test by Material Type</h3>${hbar(M.groups)}</div></div>
-    <div class="box"><h3>Test Trend (Total)</h3>${lc([{n:'Total',c:'#1d4ed8',d:M.trend||[]}])}</div></div></div>
+    <div class="box"><h3>Test Trend (Total)</h3>${lc([{n:'Total',c:'#1d4ed8',d:M.trend||[]}],'Jumlah test per hari')}</div></div></div>
     <div class="box"><h3>Recent Material Testing Data</h3>${rtb(r1,['article','supplier_name','material_number','colour','material_description','lab_in_date','lab_out_date','lab_test_no','ftr_no'],'mat')}</div>`),
   fgt:()=>PN('shoe','FGT','Fit for Growth, Fit for Market',kp5(Fg,'box',1,'hourglass')+`<div class="pg"><div class="box fl">${fs('fgt','season','Season',ofg.season)+fs('fgt','model_name','Model Name',ofg.model_name)+fs('fgt','article_no','Article No.',ofg.article_no)+fs('fgt','factory','Factory',ofg.factory)+fs('fgt','gender','Gender',ofg.gender)+fs('fgt','fgt_result','Result',ofg.fgt_result)}</div>
     <div><div class="two"><div class="box">${dn('FGT Result',Fg)}</div><div class="box"><h3>By Category</h3>${hbar(Fg.groups)}</div></div>
-    <div class="box"><h3>FGT & CT Trend</h3>${lc([{n:'FGT',c:'#1d4ed8',d:Fg.trend||[]},{n:'CT',c:'#10b981',d:b.trend2||[]}])}</div></div></div>
+    <div class="box"><h3>FGT & CT Trend</h3>${lc([{n:'FGT',c:'#1d4ed8',d:Fg.trend||[]},{n:'CT',c:'#10b981',d:b.trend2||[]}],'Jumlah data per hari (FGT dan CT)')}</div></div></div>
     <div class="box"><h3>Recent FGT Data</h3>${rtb(r2,['season','model_name','article_no','material_way_id','color','category','product_level','dev_type','qty','gender','factory'],'fgt')}</div>`),
   ocpt:()=>PN('target','OCPT','Comfort - Fit - Performance',kp5(O,'shoe',1,'hourglass')+`<div class="pg"><div class="box fl">${fs('t','name','Name',to.name)+fs('t','dept','Dept',to.dept)+fs('t','tid','Tester ID',to.tid)}${ses?'':'<small>Filter Name & Tester ID hanya untuk staf (login)</small>'}</div>
     <div><div class="two"><div class="box">${dn('OCPT Result',O)}</div><div><div class="box"><h3>Tester Gender</h3><div class="gn"><div style="color:#2563eb">${ic('male',34)}<b>${gx.man??d.man??d.male??0}</b>Male</div><div style="color:#ec4899">${ic('female',34)}<b>${gx.woman??d.woman??d.female??0}</b>Female</div></div></div><div class="box"><h3>By Dept</h3>${hbar(d.dept)}</div></div></div>
-    <div class="box"><h3>OCPT & Tester Pool Trend</h3>${lc([{n:'OCPT',c:'#1d4ed8',d:O.trend||[]},{n:'Tester Pool',c:'#10b981',d:d.trend||[]}])}</div></div></div>
+    <div class="box"><h3>OCPT & Tester Pool Trend</h3>${lc([{n:'OCPT',c:'#1d4ed8',d:O.trend||[]},{n:'Tester Pool',c:'#10b981',d:d.trend||[]}],'Jumlah data per hari (OCPT dan Tester Pool)')}</div></div></div>
     <div class="box"><h3>Recent OCPT Data</h3>${rtb(r3,['received_date','line','sd_document','po_number','model_name','gender','fit_test_size','pairs','article_number','style_color','season','test_level','result'],'ocpt')}</div>
     <div class="box"><h3>Recent Tester Pool Data</h3>${rtb(r4,['name','dept','tester_id','gender','activities','footstrike_pattern','brannock_r','foot_length_r','brannock_l','foot_length_l','slip_on'],'tester')}</div>`)};
   A(band('QUALITY & COMPLIANCE DASHBOARD',{mat:'Material Testing',fgt:'FGT',ocpt:'OCPT'}[K])+P[K]());
