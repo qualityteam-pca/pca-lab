@@ -215,7 +215,7 @@ function input(){
 async function list(){
   if(!ses)return lock();
   let data=[],error=null;
-  for(let i=0;i<30000;i+=1000){const r=await sb.from(MOD[K].t).select('*').order('id',{ascending:false}).range(i,i+999);if(r.error){error=r.error;break}data=data.concat(r.data);if(r.data.length<1000)break}
+  for(let i=0;i<30000;i+=1000){let q=sb.from(MOD[K].t).select('*');if(!INT&&/^(bond|stock)$/.test(K))q=q.eq('scope','Eksternal');const r=await q.order('id',{ascending:false}).range(i,i+999);if(r.error){error=r.error;break}data=data.concat(r.data);if(r.data.length<1000)break}
   if(error)return A('<p class="er">Akses ditolak / tabel belum dibuat.</p>');
   ROWS=data;
   A(`<div class="box"><div class="g"><label>Dari Tanggal<input id="d1" type="date" onchange="lf()"></label><label>Sampai Tanggal<input id="d2" type="date" onchange="lf()"></label><label>Cari<input id="q" oninput="lf()" placeholder="Cari data..."></label></div>
