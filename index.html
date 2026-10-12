@@ -125,6 +125,15 @@ async function dq(){
   const {data,by}=await QD();
   const mo=await QM(),MN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],ys=[...new Set([...mo.map(r=>r.y),new Date().getFullYear()])].sort(),yy=DS.y=ys.includes(DS.y)?DS.y:new Date().getFullYear();
   const MONTHLY=`<h3>Quality Rate Monthly <select style="width:auto;display:inline-block;margin-left:8px" onchange="DS.y=+this.value;render()">${ys.map(y=>`<option ${y===yy?'selected':''}>${y}</option>`).join('')}</select></h3>${vb(MN.map((n,i)=>{const r=mo.find(z=>z.y===yy&&z.m===i+1),p=r&&r.total?r.pass*100/r.total:0;return{l:n,v:r?p.toFixed(1)+'%':'-',h:p,c:r?`dd('m',${i+1})`:''}}))}${cap('bulan','Quality Rate (%) = Pass ÷ Total test; angka di atas batang = nilai %')}`;
+  const wkR=await Promise.all(SCS().map(s=>sb.rpc('dash_qc_weekly',{t:MOD[K].t,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:s}).then(r=>r.data||[]))),wkm={};
+  wkR.flat().forEach(r=>{const k=r.y+'-'+r.w,e=wkm[k]=wkm[k]||{y:r.y,w:r.w,total:0,pass:0};e.total+=r.total;e.pass+=r.pass});
+  const WKS=Object.values(wkm).filter(r=>r.y===yy).sort((a,b)=>a.w-b.w),
+   WEEKLY=`<div class="box" style="grid-column:1/-1"><h3>Quality Rate Weekly – ${yy}</h3>${vb(WKS.map(r=>{const p=r.total?r.pass*100/r.total:0;return{l:'W'+r.w,v:p.toFixed(0)+'%',h:p}}))}${cap('minggu ke- (ISO, Senin–Minggu)','Quality Rate (%); tahun mengikuti pilihan pada grafik Monthly')}</div>`;
+  const tpR=await Promise.all(SCS().map(s=>sb.rpc('dash_qc_tester',{t:MOD[K].t,ref:DS.d2,p_scope:s}).then(r=>r.data||[]))),tpm={};
+  tpR.flat().forEach(r=>{const e=tpm[r.g]=tpm[r.g]||{g:r.g,cday:0,cweek:0,cmonth:0,cmonth_pass:0};['cday','cweek','cmonth','cmonth_pass'].forEach(k=>e[k]+=r[k])});
+  const TPL=Object.values(tpm).sort((a,b)=>b.cmonth-a.cmonth||b.cweek-a.cweek).slice(0,10),
+   d0=new Date(DS.d2+'T00:00:00Z'),wk0=new Date(d0.getTime()-((d0.getUTCDay()+6)%7)*864e5).toISOString().slice(0,10),
+   TOPT=`<div class="box wrap" style="grid-column:1/-1"><h3>Top Performance Tester – Test Complete</h3><table><tr><th>No.</th><th>Tester</th><th>Harian (${DS.d2})</th><th>Mingguan (${wk0} s/d ${DS.d2})</th><th>Bulanan (${DS.d2.slice(0,7)})</th><th>Pass Rate Bulan</th></tr>${TPL.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.g)}</td><td>${r.cday}</td><td>${r.cweek}</td><td><b>${r.cmonth}</b></td><td>${(r.cmonth_pass*100/r.cmonth).toFixed(1)}%</td></tr>`).join('')||'<tr><td colspan="6">Belum ada data tester. Pilih nama Tester saat input data.</td></tr>'}</table><small>Test complete = hasil Pass / Fail. Tanggal acuan = akhir Date Range. Top 10 berdasarkan test complete bulanan.</small></div>`;
   const x=data||{total:0,pass:0,reasons:[],lines:[],tops:[],opts:{lines:[],articles:[],models:[]}},o=x.opts||{lines:[],articles:[],models:[]},rate=x.total?x.pass*100/x.total:0;
   const sel=(l,k,a)=>`<label>${l}<select onchange="DS.${k}=this.value;render()"><option value="">All</option>${(a||[]).map(v=>`<option ${DS[k]===v?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
   const rs={};(x.reasons||[]).forEach(r=>{sp(r.reason).forEach(pt=>{const k=tc(pt),e=rs[k]=rs[k]||{tot:0,z:{}};e.tot+=r.n;e.z[r.zone]=(e.z[r.zone]||0)+r.n})});
@@ -136,13 +145,13 @@ async function dq(){
   <small><b>Areas of Reject (cm²):</b> ${LG||'-'}</small></div>
   </div>
   <div><div class="box"><h3>Quality Rate</h3>${gauge(rate)}</div>
-  </div><div class="qb"><div class="box"><h3>Quality Rate per Line</h3>${vb((x.lines||[]).map(r=>({l:r.l,v:(r.pass*100/r.total).toFixed(1)+'%',h:r.pass*100/r.total,c:`dd('l','${encodeURIComponent(r.l)}')`})))}${cap('Line No.','Quality Rate (%); angka di atas batang = nilai %')}</div><div class="box wrap"><h3>Top Articles & POs by Rejects</h3><table><tr><th>Article</th><th>Model</th><th>PO No.</th><th>Rejects</th></tr>${(x.tops||[]).map(r=>`<tr><td>${esc(r.article_no)}</td><td>${esc(r.model_name)}</td><td>${esc(r.po_no)}</td><td>${r.n}</td></tr>`).join('')}<tr><th colspan="3">Total</th><th>${x.total-x.pass}</th></tr></table></div></div><div class="box" style="grid-column:1/-1">${MONTHLY}</div></div>`);
+  </div><div class="qb"><div class="box"><h3>Quality Rate per Line</h3>${vb((x.lines||[]).map(r=>({l:r.l,v:(r.pass*100/r.total).toFixed(1)+'%',h:r.pass*100/r.total,c:`dd('l','${encodeURIComponent(r.l)}')`})))}${cap('Line No.','Quality Rate (%); angka di atas batang = nilai %')}</div><div class="box wrap"><h3>Top Articles & POs by Rejects</h3><table><tr><th>Article</th><th>Model</th><th>PO No.</th><th>Rejects</th></tr>${(x.tops||[]).map(r=>`<tr><td>${esc(r.article_no)}</td><td>${esc(r.model_name)}</td><td>${esc(r.po_no)}</td><td>${r.n}</td></tr>`).join('')}<tr><th colspan="3">Total</th><th>${x.total-x.pass}</th></tr></table></div></div><div class="box" style="grid-column:1/-1">${MONTHLY}</div>${WEEKLY}${TOPT}</div>`);
 }
 let FT;
 function fitDash(){
   const el=$('#main');if(!el)return;
   el.style.transform=el.style.width=el.style.marginBottom='';
-  if(!/^di?(mat|bond|stock|fgt|ocpt)$/.test(view))return;
+  return;
   const av=window.innerHeight-(el.getBoundingClientRect().top+window.scrollY)-12;let z=1;
   for(let i=0;i<6;i++){el.style.width=(100/z)+'%';const h=el.offsetHeight;if(h*z<=av||z<=.65)break;z=Math.max(.65,z*av/h*.98)}
   if(z>=.999){el.style.width='';return}
@@ -175,11 +184,11 @@ const RC=k=>ses?sb.from(MOD[k].t).select('*').order('created_at',{ascending:fals
 const PN=(n,t,sub,body)=>`<div class="pnl"><div class="ph"><span class="ico">${ic(n,34)}</span><div><h2>${t}</h2><small>${sub}</small></div></div>${body}</div>`;
 async function dqc(){
   const nul=Promise.resolve(null),g=(k,f)=>sb.rpc('dash_panel',{k,d1:DS.d1,d2:DS.d2,f}).then(r=>r.data||{main:{},opts:[]});
-  let [a,b,c,d,r1,r2,r3,r4,gx,tn]=await Promise.all([K==='mat'?g('mat',DQ.mat):nul,K==='fgt'?g('fgt',DQ.fgt):nul,K==='ocpt'?g('ocpt',{}):nul,
+  let [a,b,c,d,r1,r2,r3,r4,gx,tn,xm,xf]=await Promise.all([K==='mat'?g('mat',DQ.mat):nul,K==='fgt'?g('fgt',DQ.fgt):nul,K==='ocpt'?g('ocpt',{}):nul,
     K==='ocpt'?sb.rpc('dash_tester',{d1:DS.d1,d2:DS.d2,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.data||{}):nul,
     K==='mat'?RC('mat'):nul,K==='fgt'?RC('fgt'):nul,K==='ocpt'?RC('ocpt'):nul,K==='ocpt'?RC('tester'):nul,
     K==='ocpt'?sb.rpc('dash_tester_gender',{d1:DS.d1||null,d2:DS.d2||null,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.data||{}):nul,
-    K==='ocpt'?sb.rpc('dash_tester_overview',{d1:DS.d1||null,d2:DS.d2||null,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.error?null:r.data):nul]);
+    K==='ocpt'?sb.rpc('dash_tester_overview',{d1:DS.d1||null,d2:DS.d2||null,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.error?null:r.data):nul,K==='mat'?sb.rpc('dash_extra',{k:'mat',d1:DS.d1,d2:DS.d2,f:DQ.mat}).then(r=>r.data||{}):nul,K==='fgt'?sb.rpc('dash_extra',{k:'fgt',d1:DS.d1,d2:DS.d2,f:DQ.fgt}).then(r=>r.data||{}):nul]);
   const E={main:{},opts:[]};a=a||E;b=b||E;c=c||E;d=d||{};gx=gx||{};
   const M=a.main,Fg=b.main,O=c.main,om=Object.assign({},...(a.opts||[])),ofg=Object.assign({},...(b.opts||[])),to=d.opts||{};
   const TN=tn||{},num=v=>(v==null||v==='')?null:Number(v),tt=num(TN.total??d.total),ta=num(TN.active??d.active),ti=num(TN.inactive??d.inactive),
@@ -190,23 +199,42 @@ async function dqc(){
     NOTE='<small class="er">Grafik ini butuh fungsi SQL dash_tester_overview. Jalankan revisi_ocpt_tester_pool.sql di Supabase.</small>',
     TK=`<div class="kt"><div style="--c:#1d4ed8"><span class="ki">${ic('users')}</span><small>TOTAL TESTER</small><b>${show(tt)}</b></div><div style="--c:#10b981"><span class="ki">${ic('check')}</span><small>ACTIVE</small><b>${show(ta)}${pc(ta)}</b></div><div style="--c:#94a3b8"><span class="ki">${ic('x')}</span><small>INACTIVE</small><b>${show(ti)}${pc(ti)}</b></div><div style="--c:#6366f1"><small>TESTER GENDER</small><div class="gn"><div style="color:#2563eb">${ic('male',30)}<b>${gm}</b>Male</div><div style="color:#ec4899">${ic('female',30)}<b>${gf}</b>Female</div><div style="color:#f59e0b">${ic('junior',30)}<b>${show(gj)}</b>Junior</div></div></div></div>`;
   const P={
-  mat:()=>PN('flask','MATERIAL TESTING','Material Quality for Better Performance',kp5(M,'flask')+`<div class="pg"><div class="box fl">${fs('mat','material_type','Material Type',om.material_type)+fs('mat','article','Article No.',om.article)+fs('mat','supplier_name','Supplier Name',om.supplier_name)+fs('mat','material_number','Material Number',om.material_number)+fs('mat','colour','Colour',om.colour)+fs('mat','result','Result',om.result)}</div>
-    <div><div class="two"><div class="box">${dn('Result Overview',M)}</div><div class="box"><h3>Test by Material Type</h3>${hbar(M.groups)}</div></div>
-    <div class="box"><h3>Test Trend (Total)</h3>${lc([{n:'Total',c:'#1d4ed8',d:M.trend||[]}],'Jumlah test per hari')}</div></div></div>
-    <div class="box"><h3>Recent Material Testing Data</h3>${rtb(r1,['article','supplier_name','material_number','colour','material_description','lab_in_date','lab_out_date','lab_test_no','ftr_no'],'mat')}</div>`),
-  fgt:()=>PN('shoe','FGT','Fit for Growth, Fit for Market',kp5(Fg,'box',1,'hourglass')+`<div class="pg"><div class="box fl">${fs('fgt','season','Season',ofg.season)+fs('fgt','model_name','Model Name',ofg.model_name)+fs('fgt','article_no','Article No.',ofg.article_no)+fs('fgt','factory','Factory',ofg.factory)+fs('fgt','gender','Gender',ofg.gender)+fs('fgt','fgt_result','Result',ofg.fgt_result)}</div>
-    <div><div class="two"><div class="box">${dn('FGT Result',Fg)}</div><div class="box"><h3>By Category</h3>${hbar(Fg.groups)}</div></div>
-    <div class="box"><h3>FGT & CT Trend</h3>${lc([{n:'FGT',c:'#1d4ed8',d:Fg.trend||[]},{n:'CT',c:'#10b981',d:b.trend2||[]}],'Jumlah data per hari (FGT dan CT)')}</div></div></div>
-    <div class="box"><h3>Recent FGT Data</h3>${rtb(r2,['season','model_name','article_no','material_way_id','color','category','product_level','dev_type','qty','gender','factory'],'fgt')}</div>`),
-  ocpt:()=>PN('target','OCPT & TESTER POOL','Comfort - Fit - Performance',`<div class="sec">OCPT Test</div>`+kp5(O,'shoe',1,'hourglass','TOTAL RECORDS TEST OCPT')+`<div class="two"><div class="box">${dn('OCPT Result',O,1)}</div><div class="box"><h3>OCPT Trend</h3>${lc([{n:'OCPT',c:'#1d4ed8',d:O.trend||[]}],'Jumlah test per hari (OCPT)')}</div></div>
+  mat:()=>{const X=xm||{},tr=X.trend||[];
+    return PN('flask','MATERIAL TESTING','Material Quality for Better Performance',kp5(M,'flask')+`<div class="pg"><div class="box fl">${fs('mat','material_type','Material Type',om.material_type)+fs('mat','article','Article No.',om.article)+fs('mat','supplier_name','Supplier Name',om.supplier_name)+fs('mat','material_number','Material Number',om.material_number)+fs('mat','colour','Colour',om.colour)+fs('mat','result','Result',om.result)}</div>
+    <div><div class="two"><div class="box">${dnt('Result Overview',resI(M),{center:prt(M),sub:'Pass rate'})}</div><div class="box">${dnt('Result by Material Type',(M.groups||[]).map(g=>({g:g.g,n:g.n})),{sub:'Total test'})}</div></div>
+    <div class="box"><h3>Test Result Trend</h3>${lc([{n:'Total',c:'#1d4ed8',d:tr.map(r=>({d:r.d,n:r.total}))},{n:'Pass',c:'#10b981',d:tr.map(r=>({d:r.d,n:r.pass}))},{n:'Fail',c:'#ef4444',d:tr.map(r=>({d:r.d,n:r.fail}))}],'Jumlah test per hari')}</div>
+    <div class="two"><div class="box"><h3>Reason Failure (by count)</h3>${hbar(X.reasons,'linear-gradient(90deg,#dc2626,#f87171)')}${cap('Jumlah kasus','Reason Failure – Part Testing')}</div>
+    <div class="box"><h3>Top 5 Suppliers by Fail Rate</h3>${hrt((X.suppliers||[]).map(r=>({g:r.g,v:r.fail*100/r.total,s:r.fail+' fail dari '+r.total+' test'})),'#ef4444')}<small style="display:block;color:#475569;margin-top:6px">Supplier dengan minimal 5 test dan ada fail. Angka = Fail ÷ Total test.</small></div></div>
+    <div class="box wrap"><h3>Material Test Performance – Top 5 Article</h3><table><tr><th>No.</th><th>Article</th><th>Total Test</th><th>Pass</th><th>Fail</th><th>Pass Rate</th><th>Avg Lead Time (hari)</th></tr>${(X.articles||[]).map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.g)}</td><td>${r.total}</td><td>${r.pass}</td><td>${r.fail}</td><td>${(r.pass*100/r.total).toFixed(1)}%</td><td>${r.lead??'-'}</td></tr>`).join('')||'<tr><td colspan="7">Belum ada data</td></tr>'}</table></div></div></div>
+    <div class="box"><h3>Recent Material Testing Data</h3>${rtb(r1,['article','supplier_name','material_number','colour','material_description','lab_in_date','lab_out_date','lab_test_no','ftr_no'],'mat')}</div>`)},
+  fgt:()=>{const X=xf||{},cats=X.cats||[],cn=X.countries||[],oth=cn.slice(8).reduce((s,r)=>s+r.n,0),ct=cn.slice(0,8).map(r=>({g:r.g,n:r.n})).concat(oth?[{g:'Lainnya',n:oth,c:'#94a3b8'}]:[]),fac=X.factory||[],mf=Math.max(1,...fac.flatMap(r=>[r.fgt,r.ct]));
+    return PN('shoe','FGT','Fit for Growth, Fit for Market',kp5(Fg,'box',1,'hourglass')+`<div class="pg"><div class="box fl">${fs('fgt','season','Season',ofg.season)+fs('fgt','model_name','Model Name',ofg.model_name)+fs('fgt','article_no','Article No.',ofg.article_no)+fs('fgt','factory','Factory',ofg.factory)+fs('fgt','gender','Gender',ofg.gender)+fs('fgt','fgt_result','Result',ofg.fgt_result)}</div>
+    <div><div class="two"><div class="box">${dnt('FGT Result',resI(Fg),{center:prt(Fg),sub:'Pass rate'})}</div><div class="box">${dnt('Result by Category',cats.map(r=>({g:r.g,n:r.n})),{sub:'Total FGT'})}</div></div>
+    <div class="box"><h3>FGT & CT Trend</h3>${lc([{n:'FGT',c:'#1d4ed8',d:Fg.trend||[]},{n:'CT',c:'#10b981',d:b.trend2||[]}],'Jumlah data per hari (FGT dan CT)')}</div>
+    <div class="two"><div class="box"><h3>Top 5 Models by Pass Rate</h3>${hrt((X.models||[]).map(r=>({g:r.g,v:r.pass*100/r.total,s:r.pass+' pass dari '+r.total+' test'})),'#10b981')}<small style="display:block;color:#475569;margin-top:6px">Urutan: Pass Rate tertinggi, lalu jumlah test terbanyak.</small></div>
+    <div class="box">${dnt('Order by Country',ct,{sub:'Total order'})}<small style="display:block;color:#475569;margin-top:6px">Satu record dengan beberapa negara dihitung per negara.</small></div></div>
+    <div class="box"><h3>FGT / CT Volume by Factory</h3><div class="gb">${fac.map(r=>`<div class="gc"><div class="bb"><i style="height:${r.fgt*100/mf}%;background:#1d4ed8"><b>${r.fgt}</b></i><i style="height:${r.ct*100/mf}%;background:#10b981"><b>${r.ct}</b></i></div>${esc(r.g)}</div>`).join('')||'<small>Belum ada data</small>'}</div><small><b style="color:#1d4ed8">●</b> FGT &nbsp; <b style="color:#10b981">●</b> CT</small>${cap('Factory','Jumlah record (FGT = Lab In FGT, CT = Lab In CT)')}</div></div></div>
+    <div class="box"><h3>Recent FGT Data</h3>${rtb(r2,['season','model_name','article_no','material_way_id','color','category','product_level','dev_type','qty','gender','factory'],'fgt')}</div>`)},
+  ocpt:()=>PN('target','OCPT & TESTER POOL','Comfort - Fit - Performance',`<div class="sec">OCPT Test</div>`+kp5(O,'shoe',1,'hourglass','TOTAL RECORDS TEST OCPT')+`<div class="two"><div class="box">${dnt('OCPT Result',resI(O),{center:O.total||0,sub:'Total Records'})}</div><div class="box"><h3>OCPT by Line</h3>${hbar(O.groups)}${cap('Jumlah test','Line')}</div></div>
     <div class="sec">Tester Pool</div>${TK}<div class="pg"><div class="box fl">${fs('t','name','Name',to.name)+fs('t','dept','Dept',to.dept)+fs('t','tid','Tester ID',to.tid)}${ses?'':'<small>Filter Name & Tester ID hanya untuk staf (login)</small>'}</div>
     <div><div class="two"><div class="box"><h3>Age Distribution</h3>${tn?vbar(age)+cap('Rentang usia (tahun)','Jumlah tester'):NOTE}</div><div class="box"><h3>Foot Size Distribution</h3>${tn?vbar(sz)+cap('Brannock UK Size (kaki kanan)','Jumlah tester'):NOTE}</div></div>
-    <div class="two"><div class="box"><h3>Tester Activities</h3>${hbar(act)}</div><div class="box"><h3>By Dept</h3>${hbar(dp)}</div></div>
-    <div class="box"><h3>OCPT & Tester Pool Trend</h3>${lc([{n:'OCPT',c:'#1d4ed8',d:O.trend||[]},{n:'Tester Pool',c:'#10b981',d:tr}],'Jumlah data per hari (OCPT dan Tester Pool)')}</div></div></div>
+    <div class="two"><div class="box"><h3>Tester Activities</h3>${hbar(act)}</div><div class="box"><h3>Distribution By Depart</h3>${hbar(dp)}</div></div>
+    <div class="two"><div class="box"><h3>OCPT Trend</h3>${lc([{n:'OCPT',c:'#1d4ed8',d:O.trend||[]}],'Jumlah test per hari (OCPT)')}</div><div class="box"><h3>Tester Pool Trend</h3>${lc([{n:'Tester Pool',c:'#10b981',d:tr}],'Jumlah tester baru per hari')}</div></div></div></div>
     <div class="box"><h3>Recent OCPT Data</h3>${rtb(r3,['received_date','line','sd_document','po_number','model_name','gender','fit_test_size','pairs','article_number','style_color','season','test_level','result'],'ocpt')}</div>
     <div class="box"><h3>Recent Tester Pool Data</h3>${rtb(r4,['name','dept','tester_id','gender','activities','footstrike_pattern','brannock_r','foot_length_r','brannock_l','foot_length_l','slip_on','status'],'tester')}</div>`)};
   A(band('QUALITY & COMPLIANCE DASHBOARD',{mat:'Material Testing',fgt:'FGT',ocpt:'OCPT & Tester Pool'}[K])+P[K]());
 }
+const PLT=['#1d4ed8','#10b981','#f59e0b','#ef4444','#a855f7','#06b6d4','#ec4899','#84cc16','#f97316','#14b8a6','#64748b'];
+const dnt=(title,items,o)=>{o=o||{};items=(items||[]).filter(x=>x.n>0);const tot=items.reduce((s,x)=>s+x.n,0);
+  if(!tot)return `<h3>${title}</h3><small>Belum ada data</small>`;
+  const R=54,C=2*Math.PI*R;let a=0;
+  const arcs=items.map((x,i)=>{const col=x.c||PLT[i%PLT.length],len=x.n*C/tot,s=`<circle r="${R}" cx="70" cy="70" fill="none" stroke="${col}" stroke-width="22" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-a}" transform="rotate(-90 70 70)"><title>${esc(x.g)}: ${x.n} (${(x.n*100/tot).toFixed(1)}%)</title></circle>`;a+=len;return s}).join('');
+  const lg=items.map((x,i)=>`<div style="display:flex;gap:6px;align-items:center;font-size:12px;margin:3px 0"><b style="color:${x.c||PLT[i%PLT.length]}">●</b><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(x.g)}">${esc(x.g)}</span><b>${x.n}</b><span style="color:#64748b;width:48px;text-align:right">${(x.n*100/tot).toFixed(1)}%</span></div>`).join('');
+  return `<h3>${title}</h3><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><svg viewBox="0 0 140 140" width="150" height="150" style="flex:none">${arcs}<text x="70" y="68" text-anchor="middle" font-size="20" font-weight="700" fill="#0f1c3a">${o.center!=null?o.center:tot}</text><text x="70" y="84" text-anchor="middle" font-size="10" fill="#475569">${o.sub||'Total'}</text></svg><div style="flex:1;min-width:160px">${lg}</div></div>`};
+const resI=m=>[{g:'Pass',n:m.pass||0,c:'#10b981'},{g:'Fail',n:m.fail||0,c:'#ef4444'},{g:'On Progress',n:m.pending||0,c:'#f59e0b'}],
+ prt=m=>(m.total?m.pass*100/m.total:0).toFixed(1)+'%',
+ hrt=(rows,col)=>(rows||[]).map(r=>`<div class="hb"><span title="${esc(r.g)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.g)}</span><div style="background:#eef3fb;border-radius:4px"><i style="width:${Math.max(r.v,3)}%;background:${r.c||col||'#10b981'};text-align:right;padding-right:6px">${r.v.toFixed(1)}%</i></div>${r.s?`<small style="grid-column:2;color:#475569">${esc(r.s)}</small>`:''}</div>`).join('')||'<small>Belum ada data</small>',
+ hbc=rows=>{const mx=Math.max(1,...(rows||[]).map(r=>r.n));return (rows||[]).map(r=>`<div class="hb"><span>${esc(r.g)}</span><div><i style="width:${Math.max(r.n*100/mx,r.n?3:0)}%;background:${r.c}">${r.n}</i></div></div>`).join('')||'<small>Belum ada data</small>'};
 const DL={material_type:'Material Type',supplier_name:'Supplier',article:'Article',category:'Category',factory:'Factory',season:'Season',country:'Country',line:'Line',gender:'Gender',test_level:'Test Level',destination:'Destination'};
 const hbar=(rows,c)=>{const mx=Math.max(1,...(rows||[]).map(r=>r.n));return (rows||[]).map(r=>`<div class="hb"><span>${esc(r.g)} (${r.n})</span><div><i style="width:${r.n*100/mx}%;background:${c||'linear-gradient(90deg,#1d4ed8,#38bdf8)'}">${r.n}</i></div></div>`).join('')||'<small>Belum ada data</small>'};
 const G=(m,g)=>`<div style="display:grid;gap:10px">${m.a.filter(f=>f[6]===g).map(F).join('')}</div>`;
@@ -322,6 +350,81 @@ async function dkal(){
    c=f=>R.filter(r=>{const d=dl(r);return d!==null&&f(d)}).length,up=R.filter(r=>{const d=dl(r);return d!==null&&d<=60}).sort((a,b)=>dl(a)-dl(b));
   A(band('KALIBRASI DASHBOARD','INTERNAL')+`<div class="k5">${[['TOTAL ALAT',R.length,'#1d4ed8'],['GOOD CONDITION',R.filter(r=>r.notes==='Good Condition').length,'#10b981'],['BROKEN',R.filter(r=>r.notes==='Broken').length,'#ef4444'],['JADWAL ≤ 30 HARI',c(d=>d>=0&&d<=30),'#f59e0b'],['TERLEWAT',c(d=>d<0),'#6366f1']].map(([l,v,k])=>`<div style="--c:${k}"><small>${l}</small><b>${v}</b></div>`).join('')}</div>
   <div class="box wrap"><h3>Pemberitahuan: Jatuh Tempo Kalibrasi 3rd Party (Yearly) ≤ 60 Hari & Terlewat</h3><table><tr><th>Item Machine</th><th>Code</th><th>PIC</th><th>Frequency</th><th>3rd Party</th><th>Calibration Date</th><th>Jatuh Tempo</th><th>Sisa Hari</th><th>Notes</th></tr>${up.map(r=>{const d=dl(r);return`<tr><td>${esc(r.item_machine)}</td><td>${esc(r.code_machine)}</td><td>${esc(r.pic)}</td><td>${esc(r.cal_freq)}</td><td>${esc(r.third_party)}</td><td>${esc(r.cal_date)}</td><td>${nx(r).toISOString().slice(0,10)}</td><td style="font-weight:700;color:${d<0?'#ef4444':d<=7?'#f59e0b':'#1d4ed8'}">${d<0?'Terlewat '+(-d)+' hari':d+' hari'}</td><td>${esc(r.notes)}</td></tr>`}).join('')||'<tr><td colspan="9">Tidak ada jatuh tempo dalam 60 hari ke depan</td></tr>'}</table></div>`)}
+let PD=null,PCFG=(()=>{try{return JSON.parse(localStorage.getItem('pca_cap')||'{}')}catch(e){return{}}})();
+const pU=s=>new Date(s+'T00:00:00Z'),pS=d=>d.toISOString().slice(0,10),pAd=(s,n)=>pS(new Date(pU(s).getTime()+n*864e5)),pMon=s=>pAd(s,-((pU(s).getUTCDay()+6)%7)),
+ pWd=(a,b)=>{let n=0;for(let t=pU(a).getTime(),e=pU(b).getTime();t<=e;t+=864e5)if(new Date(t).getUTCDay()!==0)n++;return n},
+ pOk=s=>typeof s==='string'&&s>='2000-01-01',pRs=s=>String(s||'').trim().toUpperCase().replace(/^([A-Z]+)\s+(\d+)/,'$1-$2'),
+ PC={mat:{n:'Material Testing',tm:/material/i,cap:25,col:'#10b981'},bond:{n:'Bonding & Stockfitting',tm:/bond|stock/i,cap:20,col:'#1d4ed8'}},
+ pSet=(k,f,v)=>{PCFG[k]=PCFG[k]||{};PCFG[k][f]=v;try{localStorage.setItem('pca_cap',JSON.stringify(PCFG))}catch(e){}dperf(1)},
+ pRows=async(t,cols)=>{let rows=[];for(let i=0;i<40000;i+=1000){const r=await sb.from(t).select(cols).order('id').range(i,i+999);if(r.error)throw new Error(t+': '+r.error.message);rows=rows.concat(r.data);if(r.data.length<1000)break}return rows};
+async function pLoad(){
+  const [m,b,s,tt]=await Promise.all([pRows('material_tests','tester,result,lab_in_date,lab_out_date,article,failure_part_testing'),pRows('bonding_records','tester,result,test_date'),pRows('stockfitting_records','tester,result,test_date'),sb.from('master_testers').select('name,team,status')]),nm=x=>(x||'').trim();
+  return{mat:m.filter(r=>pOk(r.lab_in_date)).map(r=>({i:r.lab_in_date,c:pOk(r.lab_out_date)?r.lab_out_date:null,res:r.result,t:nm(r.tester),a:r.article,fr:r.failure_part_testing})),
+    bond:b.concat(s).filter(r=>pOk(r.test_date)).map(r=>({i:r.test_date,c:/^(pass|fail)$/i.test(r.result||'')?r.test_date:null,res:r.result,t:nm(r.tester)})),
+    testers:tt.data||[]};
+}
+function pMet(k){
+  const rows=PD[k],cf=PCFG[k]||{},d=DS.d2,w0=pMon(d),m0=d.slice(0,8)+'01',cm=rows.filter(r=>r.c),inR=rows.filter(r=>r.i>=DS.d1&&r.i<=DS.d2),cmR=inR.filter(r=>r.c),
+   cnt=(a,x,y)=>a.filter(r=>r.c>=x&&r.c<=y).length,
+   act=PD.testers.filter(t=>PC[k].tm.test(t.team||'')&&!/^(inactive|deactive)$/i.test(t.status||'')).length,
+   wd=Math.max(1,pWd(DS.d1,DS.d2)),inc=inR.length/wd,TT={};
+  const E=n=>TT[n]=TT[n]||{n,day:0,week:0,month:0,pass:0,asg:0,asgc:0};
+  cm.forEach(r=>{if(!r.t)return;const e=E(r.t);if(r.c===d)e.day++;if(r.c>=w0&&r.c<=d)e.week++;if(r.c>=m0&&r.c<=d){e.month++;if(/^pass$/i.test(r.res||''))e.pass++}});
+  rows.forEach(r=>{if(r.t&&r.i>=m0&&r.i<=d){const e=E(r.t);e.asg++;if(r.c)e.asgc++}});
+  const tl=Object.values(TT).sort((a,b)=>b.month-a.month||b.week-a.week);
+  const days=[];for(let i=29;i>=0;i--){const x=pAd(d,-i);if(pU(x).getUTCDay()!==0)days.push(x)}
+  const cc={};cm.forEach(r=>{cc[r.c]=(cc[r.c]||0)+1});
+  const daily=days.map(x=>({d:x,n:cc[x]||0})),weekly=[...Array(12).keys()].reverse().map(i=>{const s=pAd(w0,-7*i);return{l:s.slice(5),n:cnt(cm,s,pAd(s,5))}});
+  const y=+d.slice(0,4),mo=+d.slice(5,7)-1,MNs=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const monthly=[...Array(12).keys()].reverse().map(i=>{const a=new Date(Date.UTC(y,mo-i,1)),b=new Date(Date.UTC(y,mo-i+1,0));return{l:MNs[a.getUTCMonth()]+' '+String(a.getUTCFullYear()).slice(2),n:cnt(cm,pS(a),pS(b))}});
+  const gg={};cmR.forEach(r=>{if(r.t){const q=r.t+'|'+r.c;gg[q]=(gg[q]||0)+1}});
+  const gv=Object.values(gg),auto=gv.length>=10?Math.round(gv.reduce((a,b)=>a+b,0)/gv.length):null,
+   cap=cf.cap>0?cf.cap:(auto||PC[k].cap),src=cf.cap>0?'diubah manual':auto?'rata-rata test complete per tester per hari aktif (dari data)':'asumsi awal (data tester belum cukup)',util=(cf.util>0?cf.util:85)/100;
+  const wk={};inR.forEach(r=>{const w=pMon(r.i);wk[w]=(wk[w]||0)+1});let pk=inc;
+  Object.entries(wk).forEach(([w,n])=>{const a=w<DS.d1?DS.d1:w,b=pAd(w,5)>DS.d2?DS.d2:pAd(w,5),x=pWd(a,b);if(x>=3)pk=Math.max(pk,n/x)});
+  const bl=rows.filter(r=>!r.c&&r.i<=d).map(r=>Math.max(0,pWd(r.i,d)-1)),bk=k==='mat'?bl.length/8:0,need=x=>Math.ceil((x+bk)/(cap*util)),
+   req=need(inc),rp=need(pk),cur=act?(inc+bk)/(cap*act):null;
+  const ld=cmR.map(r=>Math.max(0,pWd(r.i,r.c)-1)),avg=ld.length?ld.reduce((a,b)=>a+b,0)/ld.length:null;
+  const bu=[['≤ 3 hari (lebih cepat)',x=>x<=3,'#10b981'],['4–8 hari (sesuai standar)',x=>x>=4&&x<=8,'#1d4ed8'],['9–12 hari (melewati standar)',x=>x>=9&&x<=12,'#f59e0b'],['> 12 hari (terlambat berat)',x=>x>12,'#ef4444']].map(([g,f,c])=>({g,n:ld.filter(f).length,c}));
+  const pass=cmR.filter(r=>/^pass$/i.test(r.res||'')).length;
+  return{k,d,w0,m0,day:cnt(cm,d,d),week:cnt(cm,w0,d),month:cnt(cm,m0,d),inR,cmR,comp:inR.length?cmR.length*100/inR.length:null,passR:cmR.length?pass*100/cmR.length:null,tl,daily,weekly,monthly,act,inc,pk,cap,src,util,bl,bk,req,rp,cur,avg,bu,wd,
+    noT:cm.length?cm.filter(r=>!r.t).length*100/cm.length:0,sla8:ld.length?ld.filter(x=>x<=8).length*100/ld.length:null,wdm:Math.max(1,pWd(m0,d))};
+}
+const pK=(l,v,c,ico)=>`<div style="--c:${c}"><span class="ki">${ic(ico)}</span><small>${l}</small><b>${v}</b></div>`,
+ pVd=(act,req,rp)=>act===0?{t:'Belum ada tester aktif di Master Data',c:'a'}:act<req?{t:'PERLU TAMBAH '+(req-act)+' ORANG',c:'r'}:act>=rp?{t:act>rp?'CUKUP (surplus '+(act-rp)+' orang)':'CUKUP',c:'g'}:{t:'CUKUP UNTUK BEBAN NORMAL, KURANG SAAT PEAK (+'+(rp-act)+' orang)',c:'a'},
+ f1=v=>v==null?'–':String(Math.round(v*10)/10),
+ pBars=(a,c)=>{const mx=Math.max(1,...a.map(r=>r.n));return `<div class="vb">${a.map(r=>`<div>${r.n}<i style="height:${r.n*100/mx}%;background:${c}"></i>${esc(r.l)}</div>`).join('')}</div>`},
+ pRate=(a)=>a>=90?['Sangat Baik','g']:a>=70?['Baik','g']:a>=50?['Perlu Perhatian','a']:['Kurang','r'];
+function pSec(m){
+  const P=PC[m.k],mat=m.k==='mat',vd=pVd(m.act,m.req,m.rp),tgt=m.cap*m.util*m.wdm;
+  let ex='';
+  if(mat){
+    const rs={};m.inR.forEach(r=>{if(/^fail$/i.test(r.res||'')&&r.fr&&r.fr.trim()){const q=pRs(r.fr);rs[q]=(rs[q]||0)+1}});
+    const rl=Object.entries(rs).map(([g,n])=>({g,n})).sort((a,b)=>b.n-a.n).slice(0,10),ar={};
+    m.inR.forEach(r=>{const a=r.a||'-',e=ar[a]=ar[a]||{g:a,total:0,pass:0,fail:0,ls:0,ln:0};e.total++;if(/^pass$/i.test(r.res||''))e.pass++;if(/^fail$/i.test(r.res||''))e.fail++;if(r.c){e.ls+=Math.max(0,pWd(r.i,r.c)-1);e.ln++}});
+    const al=Object.values(ar).sort((a,b)=>b.total-a.total).slice(0,5),ov=m.bl.filter(x=>x>8).length;
+    ex=`<div class="two"><div class="box"><h3>Lead Time Incoming → Report (hari kerja Senin–Sabtu)</h3>${hbc(m.bu)}<small style="display:block;color:#475569;margin-top:6px">Standar 4–8 hari kerja. Rata-rata ${f1(m.avg)} hari; ${m.sla8==null?'–':m.sla8.toFixed(1)}% selesai ≤ 8 hari. Lead time = hari kerja dari Lab In sampai Lab Out (hari yang sama = 0).</small></div>
+    <div class="box"><h3>Backlog (belum Lab Out)</h3><div class="gn"><div>${ic('hourglass',26)}<b>${m.bl.length}</b>Total backlog</div><div class="er">${ic('clock',26)}<b>${ov}</b>&gt; 8 hari kerja</div><div>${ic('refresh',26)}<b>${m.bl.length?Math.max(...m.bl):0}</b>Terlama (hari)</div></div></div></div>
+    <div class="two"><div class="box"><h3>Reason Failure (by count)</h3>${hbar(rl,'linear-gradient(90deg,#dc2626,#f87171)')}${cap('Jumlah kasus','Reason Failure – Part Testing')}</div>
+    <div class="box wrap"><h3>Material Test Performance – Top 5 Article</h3><table><tr><th>No.</th><th>Article</th><th>Total</th><th>Fail</th><th>Pass Rate</th><th>Avg Lead (hari)</th></tr>${al.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.g)}</td><td>${r.total}</td><td>${r.fail}</td><td>${(r.pass*100/r.total).toFixed(1)}%</td><td>${r.ln?f1(r.ls/r.ln):'–'}</td></tr>`).join('')||'<tr><td colspan="6">Belum ada data</td></tr>'}</table></div></div>`;
+  }
+  const cards=[['Incoming / hari (rata-rata)',f1(m.inc),'#1d4ed8'],['Incoming / hari (minggu tersibuk)',f1(m.pk),'#6366f1'],...(mat?[['Backlog ÷ 8 hari (beban tambahan/hari)',f1(m.bk),'#f59e0b']]:[]),['Tester aktif (Master Data)',m.act,'#10b981'],['Kebutuhan tester – normal',m.req,'#1d4ed8'],['Kebutuhan tester – peak',m.rp,'#ef4444'],['Beban vs kapasitas saat ini',m.cur==null?'–':Math.round(m.cur*100)+'%',m.cur>1?'#ef4444':'#10b981']];
+  return `<div class="sec">${P.n}</div><div class="k5">${pK('COMPLETE HARI INI',m.day,'#1d4ed8','check')+pK('COMPLETE MINGGU INI',m.week,'#10b981','check')+pK('COMPLETE BULAN INI',m.month,'#6366f1','check')+pK('COMPLETENESS',m.comp==null?'–':m.comp.toFixed(1)+'%','#f59e0b','clock')+(mat?pK('AVG LEAD TIME',m.avg==null?'–':f1(m.avg)+' hr','#ef4444','hourglass'):pK('PASS RATE',m.passR==null?'–':m.passR.toFixed(1)+'%','#ef4444','x'))}</div>
+  <div class="two"><div class="box"><h3>Test Complete Harian (30 hari terakhir, Senin–Sabtu)</h3>${lc([{n:P.n,c:P.col,d:m.daily}],'Test complete per hari')}</div><div class="box">${dnt('Completeness (incoming dalam Date Range)',[{g:'Complete',n:m.cmR.length,c:'#10b981'},{g:'Belum complete',n:m.inR.length-m.cmR.length,c:'#f59e0b'}],{center:m.comp==null?'–':m.comp.toFixed(1)+'%',sub:'Complete'})}</div></div>
+  <div class="two"><div class="box"><h3>Test Complete Mingguan (12 minggu)</h3>${pBars(m.weekly,P.col)}${cap('Awal minggu (bulan-tanggal)','Jumlah test complete')}</div><div class="box"><h3>Test Complete Bulanan (12 bulan)</h3>${pBars(m.monthly,P.col)}${cap('Bulan','Jumlah test complete')}</div></div>
+  <div class="box wrap"><h3>Penilaian Performance Tester – ${P.n}</h3><table><tr><th>No.</th><th>Tester</th><th>Harian (${m.d})</th><th>Mingguan (${m.w0} s/d ${m.d})</th><th>Bulanan (${m.d.slice(0,7)})</th><th>Completeness Bulan Ini</th><th>Pass Rate</th><th>Capaian vs Target Bulan</th><th>Penilaian</th></tr>${m.tl.map((r,i)=>{const at=tgt?r.month*100/tgt:0,pr=pRate(at);return `<tr><td>${i+1}</td><td>${esc(r.n)}</td><td>${r.day}</td><td>${r.week}</td><td><b>${r.month}</b></td><td>${r.asg?(r.asgc*100/r.asg).toFixed(1)+'%':'–'}</td><td>${r.month?(r.pass*100/r.month).toFixed(1)+'%':'–'}</td><td>${at.toFixed(0)}%</td><td><span class="pst ${pr[1]}">${pr[0]}</span></td></tr>`}).join('')||'<tr><td colspan="9">Belum ada data bertester. Pilih nama Tester saat input data.</td></tr>'}</table><small style="display:block;color:#475569;margin-top:6px">Target bulan = kapasitas ${m.cap}/hari × utilisasi ${Math.round(m.util*100)}% × ${m.wdm} hari kerja berjalan = ${f1(tgt)} test. Penilaian: ≥90% Sangat Baik, 70–89% Baik, 50–69% Perlu Perhatian, &lt;50% Kurang.${m.noT>0?` <b class="er">${m.noT.toFixed(0)}% data complete belum memiliki nama tester.</b>`:''}</small></div>
+  ${ex}
+  <div class="box"><h3>Kebutuhan Tester – ${P.n}</h3><div class="g" style="max-width:640px"><label>Kapasitas (test / tester / hari)<input type="number" min="1" step="any" value="${m.cap}" onchange="pSet('${m.k}','cap',+this.value)"></label><label>Target utilisasi (%)<input type="number" min="1" max="100" step="any" value="${Math.round(m.util*100)}" onchange="pSet('${m.k}','util',+this.value)"></label></div>
+  <div class="vd">${cards.map(([l,v,c])=>`<div style="--c:${c}"><h3>${l}</h3><b class="big">${v}</b></div>`).join('')}</div>
+  <p><span class="pst ${vd.c}">${vd.t}</span></p>
+  <small style="display:block;color:#475569">Rumus: kebutuhan = ⌈ (incoming per hari${mat?' + backlog ÷ 8 hari':''}) ÷ (kapasitas × utilisasi) ⌉. Hari kerja Senin–Sabtu (${m.wd} hari pada Date Range). Sumber kapasitas: ${m.src}. <button type="button" class="btn o" style="padding:2px 8px" onclick="pSet('${m.k}','cap',0)">Reset kapasitas ke data</button> Parameter ini perkiraan awal; sesuaikan dengan standar kapasitas dari Excel acuan.</small></div>`;
+}
+async function dperf(cached){
+  A('Memuat data performance...');
+  try{if(!cached||!PD)PD=await pLoad()}catch(e){return A('<div class="box er">Gagal memuat data: '+esc(e.message)+'</div>')}
+  const ms=['mat','bond'].map(pMet);
+  A(band('PERFORMANCE DASHBOARD','TESTER – COMPLETENESS & KEBUTUHAN TESTER')+`<div class="box"><small><b>Cara baca:</b> Tanggal acuan = akhir Date Range (${DS.d2}). Harian = tanggal acuan; Mingguan = Senin–Sabtu pada minggu tersebut; Bulanan = bulan tersebut. Test complete: Bonding/Stockfitting = hasil Pass atau Fail; Material = sudah memiliki Lab Out Date. Hari kerja = Senin–Sabtu.</small>${PD.testers.length?'':'<br><small class="er">Master Data Tester masih kosong – tambahkan tester aktif agar kebutuhan tester dapat dihitung.</small>'}</div>`+ms.map(pSec).join(''));
+}
 function xl(){const R=cur(),m=MOD[K];if(!R.length)return alert('Tidak ada data pada rentang ini');
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(R.map((r,i)=>({'No.':i+1,...Object.fromEntries(VF(m).map(f=>[f[1],r[f[0]]??''])),...(K==='fgt'?Object.fromEntries(PRC.map(c=>[c,(r.proc_results||{})[c]??''])):{})}))),m.n.slice(0,30));
   XLSX.writeFile(wb,`${m.t}_${$('#d1').value||'semua'}_${$('#d2').value||'semua'}.xlsx`)}
