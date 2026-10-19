@@ -124,20 +124,16 @@ async function QM(){
   R.flat().forEach(r=>{const k=r.y+'-'+r.m,e=m[k]=m[k]||{y:r.y,m:r.m,total:0,pass:0};e.total+=r.total;e.pass+=r.pass});
   return Object.values(m);
 }
+const LG2=a=>{const m={};(a||[]).forEach(r=>{const k=String(r.l).replace(/\s*[A-Za-z]+$/,'')||String(r.l),e=m[k]=m[k]||{l:k,pass:0,total:0,src:[]};e.pass+=+r.pass||0;e.total+=+r.total||0;e.src.push(r.l)});return Object.values(m).filter(e=>e.total>0).sort((p,q)=>p.l.localeCompare(q.l,undefined,{numeric:true}))};
 async function dq(){
   const {data,by}=await QD();
   const mo=await QM(),MN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],ys=[...new Set([...mo.map(r=>r.y),new Date().getFullYear()])].sort(),yy=DS.y=ys.includes(DS.y)?DS.y:new Date().getFullYear();
   const MONTHLY=`<h3>Quality Rate Monthly <select style="width:auto;display:inline-block;margin-left:8px" onchange="DS.y=+this.value;render()">${ys.map(y=>`<option ${y===yy?'selected':''}>${y}</option>`).join('')}</select></h3>${vb(MN.map((n,i)=>{const r=mo.find(z=>z.y===yy&&z.m===i+1),p=r&&r.total?r.pass*100/r.total:0;return{l:n,v:r?p.toFixed(1)+'%':'-',h:p,c:r?`dd('m',${i+1})`:''}}))}${cap('bulan','Quality Rate (%) = Pass ÷ Total test; angka di atas batang = nilai %')}`;
   const wkR=await Promise.all(SCS().map(s=>sb.rpc('dash_qc_weekly',{t:MOD[K].t,p_line:DS.l,p_art:DS.a,p_model:DS.m,p_scope:s}).then(r=>r.data||[]))),wkm={};
   wkR.flat().forEach(r=>{const k=r.y+'-'+r.w,e=wkm[k]=wkm[k]||{y:r.y,w:r.w,total:0,pass:0};e.total+=r.total;e.pass+=r.pass});
-  const wkIn=r=>{const a=isoMon(r.y,r.w),b=iso(new Date(a.getTime()+6*864e5));return (!DS.d1||b>=DS.d1)&&(!DS.d2||iso(a)<=DS.d2)},
-   WKS=Object.values(wkm).filter(wkIn).sort((a,b)=>a.y-b.y||a.w-b.w),wky=new Set(WKS.map(r=>r.y)).size>1,
-   WEEKLY=`<div class="box" style="grid-column:1/-1"><h3>Quality Rate Weekly – ${DS.d1||'awal'} s/d ${DS.d2||'sekarang'}</h3>${vb(WKS.map(r=>{const p=r.total?r.pass*100/r.total:0;return{l:'W'+r.w+(wky?"'"+String(r.y).slice(2):''),v:p.toFixed(0)+'%',h:p}}))}${cap('minggu ke- (ISO, Senin–Minggu)','Quality Rate (%); mengikuti Date Range yang dipilih (minggu yang beririsan dengan rentang tanggal)')}</div>`;
-  const tpR=await Promise.all(SCS().map(s=>sb.rpc('dash_qc_tester',{t:MOD[K].t,ref:DS.d2,p_scope:s}).then(r=>r.data||[]))),tpm={};
-  tpR.flat().forEach(r=>{const e=tpm[r.g]=tpm[r.g]||{g:r.g,cday:0,cweek:0,cmonth:0,cmonth_pass:0};['cday','cweek','cmonth','cmonth_pass'].forEach(k=>e[k]+=r[k])});
-  const TPL=Object.values(tpm).sort((a,b)=>b.cmonth-a.cmonth||b.cweek-a.cweek).slice(0,10),
-   d0=new Date(DS.d2+'T00:00:00Z'),wk0=new Date(d0.getTime()-((d0.getUTCDay()+6)%7)*864e5).toISOString().slice(0,10),
-   TOPT=`<div class="box wrap" style="grid-column:1/-1"><h3>Top Performance Tester – Test Complete</h3><table><tr><th>No.</th><th>Tester</th><th>Harian (${DS.d2})</th><th>Mingguan (${wk0} s/d ${DS.d2})</th><th>Bulanan (${DS.d2.slice(0,7)})</th><th>Pass Rate Bulan</th></tr>${TPL.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.g)}</td><td>${r.cday}</td><td>${r.cweek}</td><td><b>${r.cmonth}</b></td><td>${(r.cmonth_pass*100/r.cmonth).toFixed(1)}%</td></tr>`).join('')||'<tr><td colspan="6">Belum ada data tester. Pilih nama Tester saat input data.</td></tr>'}</table><small>Test complete = hasil Pass / Fail. Tanggal acuan = akhir Date Range. Top 10 berdasarkan test complete bulanan.</small></div>`;
+  const wy=DS.wy=ys.includes(DS.wy)?DS.wy:new Date().getFullYear(),
+   WKS=Object.values(wkm).filter(r=>r.y===wy).sort((a,b)=>a.w-b.w),
+   WEEKLY=`<div class="box" style="grid-column:1/-1"><h3>Quality Rate Weekly <select style="width:auto;display:inline-block;margin-left:8px" onchange="DS.wy=+this.value;render()">${ys.map(y=>`<option ${y===wy?'selected':''}>${y}</option>`).join('')}</select></h3>${vb(WKS.map(r=>{const p=r.total?r.pass*100/r.total:0;return{l:'W'+r.w,v:p.toFixed(0)+'%',h:p}}))}${cap('minggu ke- (ISO, Senin–Minggu)','Quality Rate (%); tahun sesuai pilihan di judul grafik')}</div>`;
   const x=data||{total:0,pass:0,reasons:[],lines:[],tops:[],opts:{lines:[],articles:[],models:[]}},o=x.opts||{lines:[],articles:[],models:[]},rate=x.total?x.pass*100/x.total:0;
   const sel=(l,k,a)=>`<label>${l}<select onchange="DS.${k}=this.value;render()"><option value="">All</option>${(a||[]).map(v=>`<option ${DS[k]===v?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
   const rs={};(x.reasons||[]).forEach(r=>{sp(r.reason).forEach(pt=>{const k=tc(pt),e=rs[k]=rs[k]||{tot:0,z:{}};e.tot+=r.n;e.z[r.zone]=(e.z[r.zone]||0)+r.n})});
@@ -149,7 +145,7 @@ async function dq(){
   <small><b>Areas of Reject (cm²):</b> ${LG||'-'}</small></div>
   </div>
   <div><div class="box"><h3>Quality Rate</h3>${gauge(rate)}</div>
-  </div><div class="qb"><div class="box"><h3>Quality Rate per Line</h3>${vb((x.lines||[]).map(r=>({l:r.l,v:(r.pass*100/r.total).toFixed(1)+'%',h:r.pass*100/r.total,c:`dd('l','${encodeURIComponent(r.l)}')`})))}${cap('Line No.','Quality Rate (%); angka di atas batang = nilai %')}</div><div class="box wrap"><h3>Top Articles & POs by Rejects</h3><table><tr><th>Article</th><th>Model</th><th>PO No.</th><th>Rejects</th></tr>${(x.tops||[]).map(r=>`<tr><td>${esc(r.article_no)}</td><td>${esc(r.model_name)}</td><td>${esc(r.po_no)}</td><td>${r.n}</td></tr>`).join('')}<tr><th colspan="3">Total</th><th>${x.total-x.pass}</th></tr></table></div></div><div class="box" style="grid-column:1/-1">${MONTHLY}</div>${WEEKLY}${TOPT}</div>`);
+  </div><div class="qb"><div class="box"><h3>Quality Rate per Line</h3>${vb(LG2(x.lines).map(r=>({l:r.l,v:(r.pass*100/r.total).toFixed(1)+'%',h:r.pass*100/r.total,c:`dd('l','${encodeURIComponent(r.src.join('|'))}')`})))}${cap('Line No.','Quality Rate (%); angka di atas batang = nilai %')}</div><div class="box wrap"><h3>Top Articles & POs by Rejects</h3><table><tr><th>Article</th><th>Model</th><th>PO No.</th><th>Rejects</th></tr>${(x.tops||[]).map(r=>`<tr><td>${esc(r.article_no)}</td><td>${esc(r.model_name)}</td><td>${esc(r.po_no)}</td><td>${r.n}</td></tr>`).join('')}<tr><th colspan="3">Total</th><th>${x.total-x.pass}</th></tr></table></div></div><div class="box" style="grid-column:1/-1">${MONTHLY}</div>${WEEKLY}</div>`);
 }
 let FT;
 function fitDash(){
@@ -389,7 +385,7 @@ async function dd(k,v){
   let q=SQ(sb.from(m.t).select('*')).order('test_date',{ascending:false}).limit(5000),t='Semua Data';
   if(k==='m'){const y=DS.y;q=q.gte('test_date',y+'-'+pad(v)+'-01').lte('test_date',y+'-'+pad(v)+'-'+new Date(y,+v,0).getDate());t='Bulan '+pad(v)+'/'+y}
   else{q=q.gte('test_date',DS.d1).lte('test_date',DS.d2);
-    if(k==='r'){q=q.ilike('reject_reason','%'+v+'%');t='Reject Reason: '+v}if(k==='l'){q=q.eq('line_no',v);t='Line '+v}
+    if(k==='r'){q=q.ilike('reject_reason','%'+v+'%');t='Reject Reason: '+v}if(k==='l'){const ls=v.split('|');q=ls.length>1?q.in('line_no',ls):q.eq('line_no',v);t='Line '+ls.join(' + ')}
     if(k==='p'){q=q.ilike('result','pass');t='Pass'}if(k==='f'){q=q.not('result','ilike','pass');t='Rejected'}}
   if(DS.l)q=q.eq('line_no',DS.l);if(DS.a)q=q.eq('article_no',DS.a);if(DS.m)q=q.eq('model_name',DS.m);
   MD(`<div class="box" style="background:#fff;width:min(1200px,100%);margin:0"><h3>${m.n} – ${esc(t)}</h3><p id="ddm">Memuat...</p><div class="wrap" id="ddt"></div><button class="btn" style="margin-top:10px" onclick="EDQ()">Tutup</button></div>`);
