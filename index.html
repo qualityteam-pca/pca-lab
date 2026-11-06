@@ -60,7 +60,7 @@ const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFB
 const sb=supabase.createClient('https://bdjmcfvjwtsnomufypdv.supabase.co','sb_publishable_uctUGRHP5ol0Shs9DsGtAg_w5J0Me_L');
 let ses=null,view='dmat',K='mat',tab='mat',ROWS=[],SC='Eksternal',INT=false;
 const iso=d=>d.toISOString().slice(0,10),DS={d1:new Date().getFullYear()+'-01-01',d2:iso(new Date()),l:'',a:'',m:''};
-const $=s=>document.querySelector(s),A=h=>{$('#main').innerHTML=h;requestAnimationFrame(fitDash);setTimeout(fitDash,350)};
+const $=s=>document.querySelector(s),A=h=>{$('#main').innerHTML=h;if(!ses)$('#main').querySelectorAll('[onclick^="DRL("],[onclick^="dd("]').forEach(e=>{e.removeAttribute('onclick');e.style.cursor='default'});requestAnimationFrame(fitDash);setTimeout(fitDash,350)};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tag=r=>`<span class="t ${r==='Pass'||r==='Active'?'p':/progress/i.test(r)?'wp':'f'}">${esc(r)}</span>`,TG=['Pass','Fail','On Progress','Eliminated','Active','Deactive','Inactive'],JR=3,jf=o=>{if(Number(o.brannock_r)===JR||Number(o.brannock_l)===JR)o.gender='Junior'},
 jw=f=>{const g=f.elements.namedItem('gender'),r=f.elements.namedItem('brannock_r'),l=f.elements.namedItem('brannock_l');if(!g||!r||!l)return;const u=()=>{const j=Number(r.value)===JR||Number(l.value)===JR;if(j){if(g.value!=='Junior')g.dataset.auto='1';g.value='Junior'}else if(g.dataset.auto==='1'){g.value='';g.dataset.auto=''}};r.addEventListener('input',u);l.addEventListener('input',u);u()};
@@ -200,10 +200,10 @@ const stk=(rows,k,dc,lb)=>{rows=(rows||[]).slice(-12);if(!rows.length)return '<s
  const W=620,H=320,L=50,Tp=28,B=50,pw=W-L-12,ph=H-Tp-B,mx=NM(Math.max(1,...rows.map(r=>r.p+r.f+r.o))),bw=pw/rows.length,C=['#10b981','#ef4444','#f59e0b'];
  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${GRID(L,W,Tp,ph,mx)}<line x1="${L}" x2="${W-12}" y1="${Tp+ph}" y2="${Tp+ph}" stroke="#94a3b8"/>`+rows.map((r,i)=>{let y=Tp+ph;const x=L+i*bw+bw*.2,w=bw*.6,t=r.p+r.f+r.o,seg=[r.p,r.f,r.o].map((v,j)=>{const h=v*ph/mx;y-=h;return h>0?`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${C[j]}"><title>${lb[j]}: ${v}</title></rect>`:''}).join('');return `<g ${QF(k,'_month:'+dc,r.ym,r.ym)}>${seg}<text x="${x+w/2}" y="${y-6}" font-size="12" font-weight="700" text-anchor="middle" fill="#0f1c3a">${t}</text><text x="${x+w/2}" y="${Tp+ph+18}" font-size="12" text-anchor="middle" fill="#475569">${MNN[+r.ym.slice(5,7)-1]} ${r.ym.slice(2,4)}</text></g>`}).join('')+`</svg><small>${lb.map((l,j)=>`<b style="color:${C[j]}">●</b> ${l}`).join(' &nbsp; ')}</small>`+cap('Bulan','Jumlah test (klik batang untuk melihat data)')};
 const pcb=(a,ck)=>{const t=(a||[]).reduce((s,r)=>s+(+r.n),0)||1;return vcol((a||[]).map(r=>({g:r.g,v:r.n*100/t,lab:(r.n*100/t).toFixed(0)+'%',c:ck?QF(ck[0],ck[1],r.g,r.g):''})),{u:'%',d:0})};
-async function DRL(k,col,val,title){
+async function DRL(k,col,val,title){if(!ses)return;
   val=decodeURIComponent(val);title=decodeURIComponent(title);const m=MOD[k],dc={mat:'lab_in_date',fgt:'lab_in',ocpt:'received_date',tester:'created_at'}[k],[op,c2]=col.split(':');
   MD(`<div class="box" style="background:#fff;width:min(1200px,100%);margin:0"><h3>${m.n} – ${esc(title)}</h3><p id="ddm">Memuat...</p><div class="wrap" id="ddt"></div><button class="btn" style="margin-top:10px" onclick="EDQ()">Tutup</button></div>`);
-  let q=(ses?sb.from(m.t):sb.rpc('pub_'+m.t)).select('*').limit(1000),cl=null;
+  let q=sb.from(m.t).select('*').limit(1000),cl=null;
   if(k!=='tester'&&op!=='_day'&&op!=='_month'){if(DS.d1)q=q.gte(dc,DS.d1);if(DS.d2)q=q.lte(dc,DS.d2)}
   const F=k==='mat'?DQ.mat:k==='fgt'?DQ.fgt:{};Object.entries(F).forEach(([c,v])=>{if(v)q=q.eq(c,v)});
   if(k==='tester'){const t=DQ.t;if(t.name)q=q.eq('name',t.name);if(t.dept)q=q.eq('dept',t.dept);if(t.tid)q=q.eq('tester_id',t.tid)}
@@ -379,9 +379,9 @@ const pr=(o,ed)=>{const p={};PRC.forEach(c=>{if(o['proc_'+c])p[c]=o['proc_'+c];d
 const MD=h=>{EDQ();const d=document.createElement('div');d.id='emod';d.style.cssText='position:fixed;inset:0;background:rgba(15,28,58,.55);z-index:999;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px';d.innerHTML=h;document.body.appendChild(d)};
 function pd(id){const r=ROWS.find(x=>String(x.id)===String(id)),p=r.proc_results||{};
   MD(`<div class="box" style="background:#fff;width:min(560px,100%);margin:0"><h3>Detail Test per Procedure – ${esc(r.article_no)} / ${esc(r.lab_no)}</h3><div class="wrap"><table><tr><th>Procedure</th><th>Result</th></tr>${PRC.map(c=>`<tr><td>${c}</td><td>${p[c]?(/^(pass|fail)$/i.test(p[c])?tag(/^pass$/i.test(p[c])?'Pass':'Fail'):esc(p[c])):'-'}</td></tr>`).join('')}</table></div><button class="btn" style="margin-top:10px" onclick="EDQ()">Tutup</button></div>`)}
-async function dd(k,v){
+async function dd(k,v){if(!ses)return;
   if(!/^(bond|stock)$/.test(K))return;v=v&&decodeURIComponent(v);const m=MOD[K],pad=n=>String(n).padStart(2,'0');
-  let q=SQ((ses?sb.from(m.t):sb.rpc('pub_'+m.t)).select('*')).order('test_date',{ascending:false}).limit(5000),t='Semua Data';
+  let q=SQ(sb.from(m.t).select('*')).order('test_date',{ascending:false}).limit(5000),t='Semua Data';
   if(k==='m'){const y=DS.y;q=q.gte('test_date',y+'-'+pad(v)+'-01').lte('test_date',y+'-'+pad(v)+'-'+new Date(y,+v,0).getDate());t='Bulan '+pad(v)+'/'+y}
   else{q=q.gte('test_date',DS.d1).lte('test_date',DS.d2);
     if(k==='r'){q=q.ilike('reject_reason','%'+v+'%');t='Reject Reason: '+v}if(k==='l'){const ls=v.split('|');q=ls.length>1?q.in('line_no',ls):q.eq('line_no',v);t='Line '+ls.join(' + ')}
