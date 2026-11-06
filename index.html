@@ -4,6 +4,7 @@
 <title>PCA – Laboratory Management System</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
 :root{--n:#0f1c3a;--b:#1d4ed8;--bg:#f1f5fb;--bd:#d9e1ef}
 *{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:#0f1c3a;display:flex;min-height:100vh}
@@ -73,10 +74,10 @@ const MOD={
 kal:{t:'calibration_records',n:'Kalibrasi',d:r=>r.cal_date||r.created_at.slice(0,10),f:[T('item_machine','Item Machine',1),N('qty','Qty'),T('brand','Brand'),T('manufacture','Manufacture'),T('code_machine','Code of Machine'),T('series_no','Series No'),S('item_type','Type (Tool / Machine)',['Tool','Machine']),T('pic','PIC'),T('no_inventaris','No Inventaris'),T('no_wi','No WI'),T('verification','Verification'),S('cal_freq','Calibration Frequency',['Internal','External']),T('third_party','3rd Party (Calibration By)'),D('cal_date','Calibration Date',1),T('cal_result','Calibration Result'),['maintenance','Maintenance','check',['Daily','Weekly','Monthly','Quarterly','Yearly']],S('notes','Notes',['Good Condition','Broken']),T('modification','Modification'),['remarks','Remarks','textarea']]},
 mat:{t:'material_tests',n:'Material Testing',d:r=>r.lab_in_date,f:[T('article','Article'),T('supplier_name','Supplier Name'),T('material_number','Material Number'),T('colour','Colour'),T('material_description','Material Full Description'),D('lab_in_date','Lab In Date',1),D('lab_out_date','Lab Out Date'),T('lab_test_no','Lab Test No.',1),T('ftr_no','FTR No.'),T('material_name','Material Name',1),S('material_type','Material Type',TY,1),S('result','Result',RS,1),T('failure_part_testing','Reason Failure – Part Testing'),T('failure_standard','Reason Failure – Standard'),T('failure_test_result','Reason Failure – Test Result'),S('result_retest','Result Retest 1',RS),T('released_part_testing','Reason RETEST 1 – Part Testing'),T('released_standard','Reason RETEST 1 – Standard'),T('released_test_result','Reason RETEST 1 – Test Result'),S('result_retest2','Result Retest 2',RS),T('retest2_part_testing','Reason RETEST 2 – Part Testing'),T('retest2_standard','Reason RETEST 2 – Standard'),T('retest2_test_result','Reason RETEST 2 – Test Result'),S('tester','Tester',TSO.mat),T('remark','Remark')]},
 bond:{t:'bonding_records',n:'Bonding',d:r=>r.test_date,f:BF(TSO.bond)},
-stock:{t:'stockfitting_records',n:'Stockfitting',d:r=>r.test_date,f:BF(TSO.stock)},
+stock:{t:'stockfitting_records',n:'Stockfitting',d:r=>r.test_date,f:[...BF(TSO.stock),T('remark','Remark')]},
 fgt:{t:'fgt_records',n:'Finish Good Testing',d:r=>r.lab_in,f:[T('season','Season'),T('model_name','Model Name'),T('article_no','Article No',1),T('material_way_id','Material Way ID'),T('color','Color'),T('category','Category'),T('product_level','Product Level'),T('dev_type','Dev Type'),N('qty','QTY'),S('gender','Gender',['Men','Women','Kids','Unisex']),T('factory','Factory'),T('sender','Sender'),T('prod_line','Prod Line'),T('size_no','Size'),T('lab_no','Lab No',1),['order_month','Order Month','month'],T('country','Country'),T('order_no','Order No'),D('lab_in','Lab In',1),N('qty_fgt','QTY FGT'),N('qty_received','QTY Received'),D('lab_out','Lab Out'),D('podd','PODD'),S('fgt_result','FGT Result',RS),T('ct_lab_no','Lab No CT'),D('ct_lab_in','CT Lab In'),N('ct_qty','QTY CT'),N('ct_qty_received','CT Qty Received'),D('ct_lab_out','CT Lab Out'),S('ct_upper','CT Upper',RS),S('ct_bottom','CT Bottom',RS),S('cma_test','CMA Test',RS),T('atp_id','ATP ID'),D('upload_date','Upload Date'),T('remark','Remark')]},
 ocpt:{t:'ocpt_records',n:'OCPT',d:r=>r.received_date,f:[D('received_date','Received Date',1),T('line','Line'),T('sd_document','SD Document'),T('po_number','PO Number'),T('model_name','Model Name',1),S('gender','Gender',['Men','Women','Kids','Unisex']),T('fit_test_size','Fit Test Size'),N('pairs','Pairs'),T('article_number','Article Number'),T('style_color','Style Color'),T('season','Season'),T('development_type','Development Type (in ATP)'),T('shoe_last','Last'),T('model_number','Model Number'),T('fg','FG'),T('test_level','Test Level'),T('category_intended_use','Category & Intended Use'),T('mat_way_id','Mat Way ID'),T('destination','Destination'),T('developer','Developer'),T('atp_id_fit','ATP ID Fit'),T('atp_id_visual','ATP ID Visual'),S('result','Result',RS,1),['summary_test_result','Summary Test Result','textarea'],['remark','Remark','textarea']]},
-tester:{t:'tester_pool',n:'Tester Pool',grp:1,d:r=>r.created_at.slice(0,10),f:[X('P',T('name','Name',1)),X('P',T('dept','Dept',1)),X('P',S('gender','Gender',['Male','Female','Junior'])),X('R',N('brannock_r','Brannock UK Size (Right)')),X('R',N('foot_length_r','Foot Length (Right)',1)),X('R',N('ball_girth_r','Ball Girth (Right)',1)),X('R',N('ball_width_r','Ball Width (Right)',1)),X('R',N('heel_girth_r','Heel Girth (Right)',1)),X('R',N('heel_width_r','Heel Width (Right)',1)),X('L',N('brannock_l','Brannock UK Size (Left)')),X('L',N('foot_length_l','Foot Length (Left)',1)),X('L',N('ball_girth_l','Ball Girth (Left)',1)),X('L',N('ball_width_l','Ball Width (Left)',1)),X('L',N('heel_girth_l','Heel Girth (Left)',1)),X('L',N('heel_width_l','Heel Width (Left)',1)),X('M',['foot_width','Foot Measurement (Width)','radio',['Narrow Foot','Normal Foot','Wide Foot'],1],0,1),X(0,T('foot_narrow','Foot Measurement (Narrow Foot)'),1),X(0,T('foot_normal','Foot Measurement (Normal Foot)'),1),X(0,T('foot_wide','Foot Measurement (Wide Foot)'),1),X('M',S('slip_on','Slip On (Yes/No)',['Yes','No'])),X('P',T('tester_id','Tester ID',1)),X('P',D('dob','Date of Birth (dd-mm-yyyy)',1)),X('P',T('place_of_birth','Place of Birth')),X('P',N('height_cm','Height (cm)',1)),X('P',N('weight_kg','Weight (kg)',1)),X('P',['address','Address','textarea',0,1]),X('P',T('wa','WA',1)),X('P',['email','E-mail','email',0,1]),X('P',T('activities','Tester Activities',1)),X('P',S('footstrike_pattern','Footstrike Pattern',['Heel Strike','Midfoot Strike','Forefoot Strike'])),X('P',S('result','Result',['Pass','Eliminated','On Progress'])),X('P',S('status','Status',['Active','Deactive'])),X('P',['remark','Remark','textarea'])]}};
+tester:{t:'tester_pool',n:'Tester Pool',grp:1,d:r=>r.created_at.slice(0,10),f:[X('P',T('name','Name',1)),X('P',T('dept','Dept',1)),X('P',S('gender','Gender',['Male','Female','Junior'])),X('R',N('brannock_r','Brannock UK Size (Right)')),X('R',N('foot_length_r','Foot Length (Right)',1)),X('R',N('ball_girth_r','Ball Girth (Right)',1)),X('R',N('ball_width_r','Ball Width (Right)',1)),X('R',N('heel_girth_r','Heel Girth (Right)',1)),X('R',N('heel_width_r','Heel Width (Right)',1)),X('L',N('brannock_l','Brannock UK Size (Left)')),X('L',N('foot_length_l','Foot Length (Left)',1)),X('L',N('ball_girth_l','Ball Girth (Left)',1)),X('L',N('ball_width_l','Ball Width (Left)',1)),X('L',N('heel_girth_l','Heel Girth (Left)',1)),X('L',N('heel_width_l','Heel Width (Left)',1)),X('P',T('tester_id','Tester ID',1)),X('P',D('dob','Date of Birth (dd-mm-yyyy)',1)),X('P',T('place_of_birth','Place of Birth')),X('P',N('height_cm','Height (cm)',1)),X('P',N('weight_kg','Weight (kg)',1)),X('P',['address','Address','textarea',0,1]),X('P',T('wa','WA',1)),X('P',['email','E-mail','email',0,1]),X('P',T('activities','Tester Activities',1)),X('P',S('footstrike_pattern','Footstrike Pattern',['Heel Strike','Midfoot Strike','Forefoot Strike'])),X('P',S('result','Result',['Pass','Eliminated','On Progress'])),X('P',S('status','Status',['Active','Deactive'])),X('P',['remark','Remark','textarea'])]}};
 Object.values(MOD).forEach(m=>{m.a=m.f;m.f=m.f.filter(f=>!f[7])});
 let LT=Promise.resolve();
 const lt=()=>LT=Promise.resolve(sb.from('master_testers').select('name,team,status').order('name')).then(r=>{if(r.error)return;Object.values(TSO).forEach(a=>a.length=0);(r.data||[]).filter(x=>!/^(inactive|deactive)$/i.test(x.status||'')).forEach(x=>{const t=x.team||'',add=k=>{if(!TSO[k].includes(x.name))TSO[k].push(x.name)};if(/material/i.test(t))add('mat');if(/bond/i.test(t))add('bond');if(/stock/i.test(t))add('stock')})}).catch(()=>{});
@@ -84,7 +85,7 @@ const IC={flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-
 const ic=(n,s=20)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 const NAVG=[['DASHBOARD',[['dmat','Material Testing','flask'],['dfgt','FGT','shoe'],['docpt','OCPT & Tester Pool','target'],['dbond','Bonding','link'],['dstock','Stockfitting','layers']]],['INPUT (PUBLIK)',[['input','Input Data','edit']]],['DATA (LOGIN)',[['lmat','Material Testing','flask'],['lfgt','FGT','shoe'],['lbond','Bonding','link'],['lstock','Stockfitting','layers'],['locpt','OCPT','target'],['ltester','Tester Pool','users'],['master','Master Data','db']]]];
 const NAVI=[['DASHBOARD INTERNAL',[['dibond','Bonding','link'],['distock','Stockfitting','layers'],['dkal','Kalibrasi','target'],['dperf','Performance','trend']]],['DATA INTERNAL',[['lkal','Kalibrasi','db']]]],SQ=q=>/^(bond|stock)$/.test(K)&&!/^di(bond|stock)$/.test(view)?q.eq('scope',SC):q,VF=m=>INT?m.f:m.f.filter(f=>f[0]!=='scope');
-const go=v=>{view=v;SCR=1;render()},lock=()=>A(`<div class="box"><p>Halaman ini hanya untuk akun terdaftar.</p><button class="btn" onclick="go('login')">Login</button></div>`);
+const RO=()=>!!ses&&/^adidas\.quality@/i.test((ses.user&&ses.user.email)||''),go=v=>{view=v;SCR=1;render()},lock=()=>A(`<div class="box"><p>Halaman ini hanya untuk akun terdaftar.</p><button class="btn" onclick="go('login')">Login</button></div>`);
 async function render(){try{await R0()}catch(e){console.error(e);A('<div class="box er">Terjadi kesalahan: '+esc(e.message)+'</div>')}}
 async function R0(){
   SC=/^[dl]i(bond|stock)$/.test(view)?'Internal':'Eksternal';const vv=view.replace(/^([dl])i/,'$1'),isD=/^d(mat|bond|stock|fgt|ocpt|kal)$/.test(vv),isL=/^l(mat|bond|stock|fgt|ocpt|tester|kal)$/.test(vv);if(isD||isL)K=vv.slice(1);
@@ -202,7 +203,7 @@ const pcb=(a,ck)=>{const t=(a||[]).reduce((s,r)=>s+(+r.n),0)||1;return vcol((a||
 async function DRL(k,col,val,title){
   val=decodeURIComponent(val);title=decodeURIComponent(title);const m=MOD[k],dc={mat:'lab_in_date',fgt:'lab_in',ocpt:'received_date',tester:'created_at'}[k],[op,c2]=col.split(':');
   MD(`<div class="box" style="background:#fff;width:min(1200px,100%);margin:0"><h3>${m.n} – ${esc(title)}</h3><p id="ddm">Memuat...</p><div class="wrap" id="ddt"></div><button class="btn" style="margin-top:10px" onclick="EDQ()">Tutup</button></div>`);
-  let q=sb.from(m.t).select('*').limit(1000),cl=null;
+  let q=(ses?sb.from(m.t):sb.rpc('pub_'+m.t)).select('*').limit(1000),cl=null;
   if(k!=='tester'&&op!=='_day'&&op!=='_month'){if(DS.d1)q=q.gte(dc,DS.d1);if(DS.d2)q=q.lte(dc,DS.d2)}
   const F=k==='mat'?DQ.mat:k==='fgt'?DQ.fgt:{};Object.entries(F).forEach(([c,v])=>{if(v)q=q.eq(c,v)});
   if(k==='tester'){const t=DQ.t;if(t.name)q=q.eq('name',t.name);if(t.dept)q=q.eq('dept',t.dept);if(t.tid)q=q.eq('tester_id',t.tid)}
@@ -216,7 +217,7 @@ async function DRL(k,col,val,title){
   let {data,error}=await q;const pp=$('#ddm');if(!pp)return;if(!error&&cl)data=data.filter(cl);
   if(error||!data.length){pp.textContent=error?'Gagal (perlu login): '+error.message:'Tidak ada data.';return}
   pp.textContent=data.length+' data'+(data.length>=1000?' (maks. 1000 pertama)':'');
-  const fs2=m.f.filter(f=>f[2]!=='check');
+  const fs2=m.f.filter(f=>f[2]!=='check'&&(ses||!(k==='tester'&&f[0]==='dob')));
   $('#ddt').innerHTML=`<table><tr><th>No.</th>${fs2.map(f=>`<th>${f[1]}</th>`).join('')}</tr>${data.slice(0,300).map((r,i)=>`<tr><td>${i+1}</td>${fs2.map(f=>`<td>${esc(r[f[0]])}</td>`).join('')}</tr>`).join('')}</table>`+(data.length>300?'<small>Menampilkan 300 baris pertama.</small>':'')}
 async function dqc(){
   const nul=Promise.resolve(null),g=(k,f)=>sb.rpc('dash_panel',{k,d1:DS.d1,d2:DS.d2,f}).then(r=>r.data||{main:{},opts:[]});
@@ -258,7 +259,7 @@ async function dqc(){
     <div class="box"><h3>FGT Result per Bulan</h3>${stk(MS(FX,'lab_in','fgt_result'),'fgt','lab_in')}</div>
     <div class="box"><h3>FGT & CT Trend</h3>${lc([{n:'FGT',c:'#1d4ed8',k:['fgt','_day:lab_in'],d:Fg.trend||[]},{n:'CT',c:'#10b981',k:['fgt','_day:ct_lab_in'],d:b.trend2||[]}],'Jumlah data per hari (FGT dan CT)')}</div>
     <div class="two"><div class="box"><h3>Top 5 Models by Pass Rate</h3>${hrt((X.models||[]).map(r=>({g:r.g,v:r.pass*100/r.total,s:r.pass+' pass dari '+r.total+' test'})),'#10b981',['fgt','model_name'])}<small style="display:block;color:#475569;margin-top:6px">Urutan: Pass Rate tertinggi, lalu jumlah test terbanyak.</small></div>
-    <div class="box">${dnt('Order by Country',ct,{sub:'Total order',size:210,k:['fgt','country'],mh:'260px'})}<small style="display:block;color:#475569;margin-top:6px">Satu record dengan beberapa negara dihitung per negara.</small></div></div>
+    <div class="box">${dnt('Order by Country (Top 10)',ct.slice(0,10),{sub:'Total top 10',size:210,k:['fgt','country'],mh:'260px'})}<small style="display:block;color:#475569;margin-top:6px">Satu record dengan beberapa negara dihitung per negara.</small></div></div>
     <div class="box"><h3>FGT / CT Volume by Factory</h3><div class="gb">${fac.map(r=>`<div class="gc" ${QF('fgt','factory',r.g,r.g)}><div class="bb"><i style="height:${r.fgt*100/mf}%;background:#1d4ed8"><b>${r.fgt}</b></i><i style="height:${r.ct*100/mf}%;background:#10b981"><b>${r.ct}</b></i></div>${esc(r.g)}</div>`).join('')||'<small>Belum ada data</small>'}</div><small><b style="color:#1d4ed8">●</b> FGT &nbsp; <b style="color:#10b981">●</b> CT</small>${cap('Factory','Jumlah record (FGT = Lab In FGT, CT = Lab In CT)')}</div></div></div>
     <div class="box"><h3>Recent FGT Data</h3>${rtb(r2,['season','model_name','article_no','material_way_id','color','category','product_level','dev_type','qty','gender','factory'],'fgt')}</div>`)},
   ocpt:()=>PN('target','OCPT & TESTER POOL','Comfort - Fit - Performance',`<div class="sec">OCPT Test</div>`+kp5(O,'shoe',1,'hourglass','TOTAL RECORDS TEST OCPT','ocpt')+`<div class="two"><div class="box">${dnt('OCPT Result',resI(O),{center:O.total||0,sub:'Total Records',size:220,k:['ocpt','_eq:result']})}</div><div class="box"><h3>OCPT by Line</h3>${hbar(O.groups,null,['ocpt','_eq:line'])}${cap('Jumlah test (klik untuk detail)','Line')}</div></div>
@@ -271,7 +272,7 @@ async function dqc(){
     <div class="box"><h3>Distribution By Depart</h3>${hbar(dp,null,['tester','_eq:dept'])}</div>
     <div class="box"><h3>Tester Pool Trend</h3>${lc([{n:'Tester Pool',c:'#10b981',k:['tester','_day:created_at'],d:tr}],'Jumlah tester baru per hari')}</div></div></div>
     <div class="box"><h3>Recent OCPT Data</h3>${rtb(r3,['received_date','line','sd_document','po_number','model_name','gender','fit_test_size','pairs','article_number','style_color','season','test_level','result'],'ocpt')}</div>
-    <div class="box"><h3>Recent Tester Pool Data</h3>${rtb(r4,['name','dept','tester_id','gender','activities','footstrike_pattern','brannock_r','foot_length_r','brannock_l','foot_length_l','slip_on','status'],'tester')}</div>`)};
+    <div class="box"><h3>Recent Tester Pool Data</h3>${rtb(r4,['name','dept','tester_id','gender','activities','footstrike_pattern','brannock_r','foot_length_r','brannock_l','foot_length_l','status'],'tester')}</div>`)};
   A(band('QUALITY & COMPLIANCE DASHBOARD',{mat:'Material Testing',fgt:'FGT',ocpt:'OCPT & Tester Pool'}[K])+P[K]());
 }
 const PLT=['#1d4ed8','#10b981','#f59e0b','#ef4444','#a855f7','#06b6d4','#ec4899','#84cc16','#f97316','#14b8a6','#64748b'];
@@ -292,7 +293,7 @@ const TP=m=>`<div class="tp"><div><h3>TESTER PROFILE</h3>${G(m,'P')}</div><div><
 async function tpool(){
   const {data}=await sb.rpc('dash_tester'),x=data||{total:0,width:{}};
   return `<h2 style="text-transform:uppercase;margin:6px 0 12px">Tester Pool</h2><div class="k3"><div class="box"><h4>TOTAL TESTER</h4><b>${x.total}</b></div><div class="box"><h4>AVG HEIGHT (CM)</h4><b>${x.h??'-'}</b></div><div class="box"><h4>AVG WEIGHT (KG)</h4><b>${x.w??'-'}</b></div></div>
-  <div class="dm"><div class="box"><h3>Foot Width</h3>${hbar(Object.entries(x.width||{}).map(([g,n])=>({g,n})))}</div><div class="box"><h3>By Dept</h3>${hbar(x.dept)}</div><div class="box"><h3>Tester Activities</h3>${hbar(x.act)}</div><div class="box"><h3>Slip On</h3>${hbar(x.slip)}</div><div class="box"><h3>Brannock UK Size (Right)</h3>${hbar(x.size)}</div><div class="box"><h3>Avg Foot Length</h3>Right: <b>${x.fl_r??'-'}</b> · Left: <b>${x.fl_l??'-'}</b></div></div>`;
+  <div class="dm"><div class="box"><h3>Foot Width</h3>${hbar(Object.entries(x.width||{}).map(([g,n])=>({g,n})))}</div><div class="box"><h3>By Dept</h3>${hbar(x.dept)}</div><div class="box"><h3>Tester Activities</h3>${hbar(x.act)}</div><div class="box"><h3>Brannock UK Size (Right)</h3>${hbar(x.size)}</div><div class="box"><h3>Avg Foot Length</h3>Right: <b>${x.fl_r??'-'}</b> · Left: <b>${x.fl_l??'-'}</b></div></div>`;
 }
 async function dg(){
   const {data}=await sb.rpc('dash_multi',{k:K,d1:DS.d1,d2:DS.d2}),m=(data&&data.main)||{total:0,pass:0,trend:[]},dims=(data&&data.dims)||[],tm=Math.max(1,...m.trend.map(g=>g.n));
@@ -308,14 +309,14 @@ async function input(){await LT;
   const ra=$('[name=reject_area]');if(ra)ra.placeholder='Contoh: 2.5, 1.3 (pisahkan dengan koma, desimal pakai titik)';
   {const e=$('[name=scope]');if(e&&!INT){[...e.options].filter(o=>o.value==='Internal').forEach(o=>o.remove());e.value='Eksternal';e.closest('label').style.display='none'}}
   if(tab==='kal')kf($('#f'));
-  if(tab==='tester'){const a=$('[name=activities]'),s=$('[name=footstrike_pattern]'),w=s.closest('label'),u=()=>{const on=/running|lari/i.test(a.value);w.style.display=on?'':'none';s.required=on;if(!on)s.value=''};a.oninput=u;$('#f').onreset=()=>setTimeout(u);u();jw($('#f'))}
+  if(tab==='tester'){const a=$('[name=activities]'),s=$('[name=footstrike_pattern]'),w=s.closest('label'),u=()=>{const on=/running|lari/i.test(a.value);w.style.display=on?'':'none';s.required=false;if(!on)s.value=''};a.oninput=u;$('#f').onreset=()=>setTimeout(u);u();jw($('#f'))}
   $('#f').onsubmit=async e=>{
     e.preventDefault();
     const o=Object.fromEntries([...new FormData(e.target)].map(([k,v])=>[k,v.trim()===''?null:v.trim()]));
     ['reject_zone','reject_area','reject_intervals'].forEach(k=>{if(o[k])o[k]=o[k].split(',').map(s=>s.trim()).filter(Boolean).join(', ')});if(tab==='fgt')pr(o);if(tab==='kal')ck(o,$('#f'));
-    if(tab==='tester'){jf(o);o.foot_narrow=o.foot_width==='Narrow Foot'?'Yes':null;o.foot_normal=o.foot_width==='Normal Foot'?'Yes':null;o.foot_wide=o.foot_width==='Wide Foot'?'Yes':null;delete o.foot_width}
+    if(tab==='tester'){jf(o)}
     const {error}=await sb.from(m.t).insert(o); // tanpa .select(): publik hanya boleh menulis
-    $('#m').className='msg '+(error?'er':'ok');$('#m').textContent=error?'Gagal: '+error.message:'Data tersimpan ✔';
+    $('#m').className='msg '+(error?'er':'ok');$('#m').textContent=error?(/duplikat/i.test(error.message)?'Data ini sudah pernah diinput, tidak disimpan lagi.':'Gagal: '+error.message):'Data tersimpan ✔';
     if(!error)e.target.reset();
   };
 }
@@ -326,21 +327,21 @@ async function list(){
   if(error)return A('<p class="er">Akses ditolak / tabel belum dibuat.</p>');
   ROWS=data;
   A(`<div class="box"><div class="g"><label>Dari Tanggal<input id="d1" type="date" onchange="lf()"></label><label>Sampai Tanggal<input id="d2" type="date" onchange="lf()"></label><label>Cari<input id="q" oninput="lf()" placeholder="Cari data..."></label>${K==='mat'?`<label>Status Lab Out<select id="st" onchange="lf()"><option value="">Semua</option><option value="open">Belum complete (Lab Out kosong)</option><option value="done">Sudah complete</option></select></label>`:''}<label>Rentang cepat<select onchange="lq(this.value)"><option value="">Pilih...</option><option value="lw">Minggu lalu</option><option value="m">Bulan ini</option><option value="a">Semua</option></select></label></div>
-  <button class="btn" onclick="xl()">⬇ Download Excel</button> <button class="btn o" onclick="tpl()">Template Excel</button> <label class="btn o" style="display:inline-block;cursor:pointer;color:var(--n)">⬆ Import Excel<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label> <small id="cnt"></small></div><div class="box wrap" id="tb"></div>`);lf();
+  <button class="btn" onclick="xl()">⬇ Download Excel</button> ${RO()?'':`<button class="btn o" onclick="tpl()">Template Excel</button> <label class="btn o" style="display:inline-block;cursor:pointer;color:var(--n)">⬆ Import Excel<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label>`} <small id="cnt"></small></div><div class="box wrap" id="tb"></div>`);lf();
 }
 const lq=v=>{const a=$('#d1'),b=$('#d2');if(v==='lw'){[a.value,b.value]=LW()}else if(v==='m'){const n=new Date();a.value=ld(new Date(n.getFullYear(),n.getMonth(),1));b.value=ld(n)}else{a.value='';b.value=''}lf()};
 function cur(){const m=MOD[K],a=$('#d1').value,b=$('#d2').value,q=$('#q').value.toLowerCase(),st=K==='mat'&&$('#st')?$('#st').value:'',lo=r=>r.lab_out_date&&String(r.lab_out_date)>='2000-01-01',o=ROWS.filter(r=>{const d=m.d(r)||r.created_at.slice(0,10);return(!a||d>=a)&&(!b||d<=b)&&(!q||m.f.some(f=>String(r[f[0]]??'').toLowerCase().includes(q)))&&(st!=='open'||!lo(r))&&(st!=='done'||lo(r))});if(st==='open')o.sort((x,y)=>String(x.lab_in_date)<String(y.lab_in_date)?-1:1);return o}
-async function qlo(id){const v=$('#lo'+id).value,r=ROWS.find(x=>String(x.id)===String(id));if(!v)return alert('Isi tanggal Lab Out dulu.');if(r&&r.lab_in_date&&v<r.lab_in_date&&!confirm('Lab Out ('+v+') lebih awal dari Lab In ('+r.lab_in_date+'). Tetap simpan?'))return;const {error}=await sb.from('material_tests').update({lab_out_date:v}).eq('id',id);if(error)return alert('Gagal simpan: '+error.message);if(r)r.lab_out_date=v;lf(1)}
+async function qlo(id){if(RO())return;const v=$('#lo'+id).value,r=ROWS.find(x=>String(x.id)===String(id));if(!v)return alert('Isi tanggal Lab Out dulu.');if(r&&r.lab_in_date&&v<r.lab_in_date&&!confirm('Lab Out ('+v+') lebih awal dari Lab In ('+r.lab_in_date+'). Tetap simpan?'))return;const {error}=await sb.from('material_tests').update({lab_out_date:v}).eq('id',id);if(error)return alert('Gagal simpan: '+error.message);if(r)r.lab_out_date=v;lf(1)}
 let PG=1,PS=100;
 const gp=p=>{PG=p;lf(1);const t=$('#tb');if(t)t.scrollIntoView({block:'start'})};
 const pgbar=n=>{const t=Math.max(1,Math.ceil(n/PS));if(PG>t)PG=t;const d1=PG<2?'disabled':'',d2=PG>=t?'disabled':'',sx='width:auto;display:inline-block';
   return `<div class="pgb" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0"><button type="button" class="btn o" onclick="gp(1)" ${d1}>«</button><button type="button" class="btn o" onclick="gp(${PG-1})" ${d1}>‹ Prev</button><span>Halaman <select style="${sx}" onchange="gp(+this.value)">${Array.from({length:t},(_,i)=>`<option value="${i+1}" ${i+1===PG?'selected':''}>${i+1}</option>`).join('')}</select> dari ${t}</span><button type="button" class="btn o" onclick="gp(${PG+1})" ${d2}>Next ›</button><button type="button" class="btn o" onclick="gp(${t})" ${d2}>»</button><span style="margin-left:auto">Baris per halaman <select style="${sx}" onchange="PS=+this.value;PG=1;lf(1)">${[50,100,200,300,500].map(v=>`<option ${v===PS?'selected':''}>${v}</option>`).join('')}</select></span></div>`};
-function lf(keep){if(!keep)PG=1;const R=cur(),m=MOD[K],bar=pgbar(R.length),a=(PG-1)*PS,P=R.slice(a,a+PS);
+function lf(keep){if(!keep)PG=1;const R=cur(),m=MOD[K],bar=pgbar(R.length),a=(PG-1)*PS,P=R.slice(a,a+PS),rw=!RO(),ac=rw||K==='fgt';
   $('#cnt').textContent=R.length+' data'+(R.length?' · menampilkan '+(a+1)+'–'+(a+P.length):'')+' (Excel berisi semua data)';
-  $('#tb').innerHTML=bar+`<div class="wrap"><table><tr><th>No.</th>${VF(m).map(f=>`<th>${f[1]}</th>`).join('')}<th style="position:sticky;right:0;background:#e3ebfa;text-align:center;box-shadow:-2px 0 4px rgba(0,0,0,.08)">Aksi</th></tr>${P.map((r,i)=>`<tr><td>${a+i+1}</td>${VF(m).map(f=>{const v=r[f[0]];return`<td${String(v??'').length>28?' class="wr"':''}>${TG.includes(v)?tag(v):esc(v)}</td>`}).join('')}<td style="position:sticky;right:0;background:#fff;text-align:center;box-shadow:-2px 0 4px rgba(0,0,0,.08)">${K==='fgt'?`<button type="button" class="btn o" style="padding:3px 9px;font-size:12px" onclick="pd('${r.id}')">Detail</button> `:''}${K==='mat'&&!(r.lab_out_date&&String(r.lab_out_date)>='2000-01-01')?`<input type="date" id="lo${r.id}" title="Lab Out Date" style="width:140px;padding:3px;display:inline-block"> <button type="button" class="btn" style="padding:3px 9px;font-size:12px" onclick="qlo('${r.id}')">Simpan</button> `:''}<button type="button" class="btn o" title="Edit data" style="padding:3px 9px;font-size:15px" onclick="ed('${r.id}')">✎</button></td></tr>`).join('')}</table></div>`+bar}
+  $('#tb').innerHTML=bar+`<div class="wrap"><table><tr><th>No.</th>${VF(m).map(f=>`<th>${f[1]}</th>`).join('')}${ac?`<th style="position:sticky;right:0;background:#e3ebfa;text-align:center;box-shadow:-2px 0 4px rgba(0,0,0,.08)">Aksi</th>`:''}</tr>${P.map((r,i)=>`<tr><td>${a+i+1}</td>${VF(m).map(f=>{const v=r[f[0]];return`<td${String(v??'').length>28?' class="wr"':''}>${TG.includes(v)?tag(v):esc(v)}</td>`}).join('')}${ac?`<td style="position:sticky;right:0;background:#fff;text-align:center;box-shadow:-2px 0 4px rgba(0,0,0,.08)">`:''}${K==='fgt'?`<button type="button" class="btn o" style="padding:3px 9px;font-size:12px" onclick="pd('${r.id}')">Detail</button> `:''}${rw&&K==='mat'&&!(r.lab_out_date&&String(r.lab_out_date)>='2000-01-01')?`<input type="date" id="lo${r.id}" title="Lab Out Date" style="width:140px;padding:3px;display:inline-block"> <button type="button" class="btn" style="padding:3px 9px;font-size:12px" onclick="qlo('${r.id}')">Simpan</button> `:''}${rw?`<button type="button" class="btn o" title="Edit data" style="padding:3px 9px;font-size:15px" onclick="ed('${r.id}')">✎</button>`:''}${ac?'</td>':''}</tr>`).join('')}</table></div>`+bar}
 const EDQ=()=>{const e=$('#emod');if(e)e.remove()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')EDQ()});
-function ed(id){
+function ed(id){if(RO())return;
   const m=MOD[K],r=ROWS.find(x=>String(x.id)===String(id));if(!r)return;EDQ();
   const d=document.createElement('div');d.id='emod';
   d.style.cssText='position:fixed;inset:0;background:rgba(15,28,58,.55);z-index:999;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px';
@@ -358,16 +359,14 @@ function ed(id){
   if(!INT){const e=f.elements.namedItem('scope');if(e){e.value='Eksternal';e.closest('label').style.display='none'}}
   if(m===MOD.fgt)PRC.forEach(c=>{const e=f.elements.namedItem('proc_'+c);if(e&&r.proc_results&&r.proc_results[c])e.value=r.proc_results[c]});
   if(m.grp){
-    const w=r.foot_wide==='Yes'?'Wide Foot':r.foot_narrow==='Yes'?'Narrow Foot':r.foot_normal==='Yes'?'Normal Foot':null;
-    f.querySelectorAll('[name=foot_width]').forEach(x=>x.checked=x.value===w);
     const a=f.elements.namedItem('activities'),s=f.elements.namedItem('footstrike_pattern'),lb=s.closest('label'),
-      u=()=>{const on=/running|lari/i.test(a.value);lb.style.display=on?'':'none';s.required=on;if(!on)s.value=''};
+      u=()=>{const on=/running|lari/i.test(a.value);lb.style.display=on?'':'none';s.required=false;if(!on)s.value=''};
     a.oninput=u;u();jw(f)}
   f.onsubmit=async e=>{
     e.preventDefault();const em=$('#em');
     const o=Object.fromEntries([...new FormData(f)].map(([k,v])=>[k,v.trim()===''?null:v.trim()]));
     ['reject_zone','reject_area','reject_intervals'].forEach(k=>{if(o[k])o[k]=o[k].split(',').map(s=>s.trim()).filter(Boolean).join(', ')});if(m===MOD.fgt)pr(o,r.proc_results);if(m===MOD.kal)ck(o,f);
-    if(m.grp){jf(o);o.foot_narrow=o.foot_width==='Narrow Foot'?'Yes':null;o.foot_normal=o.foot_width==='Normal Foot'?'Yes':null;o.foot_wide=o.foot_width==='Wide Foot'?'Yes':null;delete o.foot_width}
+    if(m.grp){jf(o)}
     const {data,error}=await sb.from(m.t).update(o).eq('id',r.id).select();
     if(error){em.className='msg er';em.textContent='Gagal: '+error.message;return}
     if(!data||!data.length){em.className='msg er';em.textContent='Tidak ada data yang berubah. Akun Anda kemungkinan belum punya izin UPDATE di Supabase (lihat policy tabel).';return}
@@ -382,7 +381,7 @@ function pd(id){const r=ROWS.find(x=>String(x.id)===String(id)),p=r.proc_results
   MD(`<div class="box" style="background:#fff;width:min(560px,100%);margin:0"><h3>Detail Test per Procedure – ${esc(r.article_no)} / ${esc(r.lab_no)}</h3><div class="wrap"><table><tr><th>Procedure</th><th>Result</th></tr>${PRC.map(c=>`<tr><td>${c}</td><td>${p[c]?(/^(pass|fail)$/i.test(p[c])?tag(/^pass$/i.test(p[c])?'Pass':'Fail'):esc(p[c])):'-'}</td></tr>`).join('')}</table></div><button class="btn" style="margin-top:10px" onclick="EDQ()">Tutup</button></div>`)}
 async function dd(k,v){
   if(!/^(bond|stock)$/.test(K))return;v=v&&decodeURIComponent(v);const m=MOD[K],pad=n=>String(n).padStart(2,'0');
-  let q=SQ(sb.from(m.t).select('*')).order('test_date',{ascending:false}).limit(5000),t='Semua Data';
+  let q=SQ((ses?sb.from(m.t):sb.rpc('pub_'+m.t)).select('*')).order('test_date',{ascending:false}).limit(5000),t='Semua Data';
   if(k==='m'){const y=DS.y;q=q.gte('test_date',y+'-'+pad(v)+'-01').lte('test_date',y+'-'+pad(v)+'-'+new Date(y,+v,0).getDate());t='Bulan '+pad(v)+'/'+y}
   else{q=q.gte('test_date',DS.d1).lte('test_date',DS.d2);
     if(k==='r'){q=q.ilike('reject_reason','%'+v+'%');t='Reject Reason: '+v}if(k==='l'){const ls=v.split('|');q=ls.length>1?q.in('line_no',ls):q.eq('line_no',v);t='Line '+ls.join(' + ')}
@@ -530,9 +529,20 @@ async function dperf(cached){
 function xl(){const R=cur(),m=MOD[K];if(!R.length)return alert('Tidak ada data pada rentang ini');
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(R.map((r,i)=>({'No.':i+1,...Object.fromEntries(VF(m).map(f=>[f[1],r[f[0]]??''])),...(K==='fgt'?Object.fromEntries(PRC.map(c=>[c,(r.proc_results||{})[c]??''])):{})}))),m.n.slice(0,30));
   XLSX.writeFile(wb,`${m.t}_${$('#d1').value||'semua'}_${$('#d2').value||'semua'}.xlsx`)}
-function tpl(){const m=MOD[K],wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([VF(m).map(f=>f[1]).concat(K==='fgt'?PRC:[])]),m.n.slice(0,30));XLSX.writeFile(wb,'template_'+m.t+'.xlsx')}
+async function tpl(){await LT;const m=MOD[K],fs=VF(m),heads=fs.map(f=>f[1]).concat(K==='fgt'?PRC:[]);
+  if(typeof ExcelJS==='undefined'){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([heads]),m.n.slice(0,30));return XLSX.writeFile(wb,'template_'+m.t+'.xlsx')}
+  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet(m.n.slice(0,30)),ls=wb.addWorksheet('Lists');
+  ws.addRow(heads);ws.getRow(1).font={bold:true};ws.views=[{state:'frozen',ySplit:1}];
+  heads.forEach((h,i)=>ws.getColumn(i+1).width=Math.max(14,String(h).length+4));
+  let c=0;
+  fs.forEach((f,i)=>{if(f[2]!=='select'||!f[3]||!f[3].length)return;c++;f[3].forEach((v,r)=>ls.getCell(r+1,c).value=v);
+    const L=ls.getColumn(c).letter,ref='Lists!$'+L+'$1:$'+L+'$'+f[3].length;
+    for(let r=2;r<=2000;r++)ws.getCell(r,i+1).dataValidation={type:'list',allowBlank:true,showErrorMessage:true,errorTitle:'Pilihan tidak valid',error:'Pilih salah satu nilai dari dropdown.',formulae:[ref]}});
+  ls.state='hidden';
+  const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download='template_'+m.t+'.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 const nd=s=>{s=String(s).trim();const t=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);return t?t[3]+'-'+t[2].padStart(2,'0')+'-'+t[1].padStart(2,'0'):s.slice(0,10)};
-async function imp(el){
+async function imp(el){if(RO())return;
   const file=el.files[0];if(!file)return;const m=MOD[K],map={};
   m.f.forEach(f=>{map[f[1].toLowerCase()]=f;map[f[0].toLowerCase()]=f});if(K==='mat')[['result retest','result_retest'],['result pass','result_retest'],['reason released – part testing','released_part_testing'],['reason released – standard','released_standard'],['reason released – test result','released_test_result'],['reason pass – part testing','released_part_testing'],['reason pass – standard','released_standard'],['reason pass – test result','released_test_result']].forEach(([a,b])=>{map[a]=m.f.find(f=>f[0]===b)});map['areas of reject (cm²)']=map['areas of reject (cm2)']=map['reject_area'];map['reject area (pisahkan koma)']=map['reject_zone']=m.f.find(f=>f[0]==='reject_zone')||map['reject area'];
   const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}),raw=wb.SheetNames.flatMap(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{defval:''}));
@@ -566,8 +576,8 @@ async function masterMat(){
   if(!ses)return lock();
   const {data,error}=await sb.from('master_materials').select('*').order('name');
   if(error)return A('<p class="er">Akses ditolak.</p>');
-  A(MTABS()+`<form class="box" id="f"><div class="g">${[T('name','Material Name',1),S('material_type','Material Type',TY,1),T('color','Color')].map(F).join('')}</div><button class="btn">+ Add New</button><p class="msg" id="m"></p></form>
-  <div class="box wrap"><table><tr><th>No.</th><th>Material Name</th><th>Type</th><th>Color</th><th></th></tr>${data.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${esc(r.material_type)}</td><td>${esc(r.color)}</td><td><button class="btn d" onclick="del(${r.id})">Hapus</button></td></tr>`).join('')}</table></div>`);
+  A(MTABS()+`<form class="box" id="f" ${RO()?'style="display:none"':''}><div class="g">${[T('name','Material Name',1),S('material_type','Material Type',TY,1),T('color','Color')].map(F).join('')}</div><button class="btn">+ Add New</button><p class="msg" id="m"></p></form>
+  <div class="box wrap"><table><tr><th>No.</th><th>Material Name</th><th>Type</th><th>Color</th><th></th></tr>${data.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${esc(r.material_type)}</td><td>${esc(r.color)}</td><td>${RO()?'':`<button class="btn d" onclick="del(${r.id})">Hapus</button>`}</td></tr>`).join('')}</table></div>`);
   $('#f').onsubmit=async e=>{e.preventDefault();const o=Object.fromEntries([...new FormData(e.target)].map(([k,v])=>[k,v.trim()||null])),{error}=await sb.from('master_materials').insert(o);
     if(error){$('#m').className='msg er';$('#m').textContent='Gagal (hanya supervisor/admin): '+error.message}else master()};
 }
@@ -575,8 +585,8 @@ async function masterTes(){
   if(!ses)return lock();
   const {data,error}=await sb.from('master_testers').select('*').order('name');
   if(error)return A(MTABS()+'<p class="er">Tabel master_testers belum dibuat. Jalankan revisi_dashboard_v2.sql di Supabase.</p>');
-  A(MTABS()+`<form class="box" id="f"><div class="g">${[T('name','Tester Name',1),S('team','Team',['Material','Bonding','Stockfitting','Bonding & Stockfitting'],1),S('status','Status',['Active','Inactive'],1)].map(F).join('')}</div><button class="btn">+ Add New</button><p class="msg" id="m"></p></form>
-  <div class="box wrap"><table><tr><th>No.</th><th>Tester Name</th><th>Team</th><th>Status</th><th></th></tr>${data.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${esc(r.team)}</td><td>${tag(r.status||'')}</td><td><button class="btn o" onclick="tst(${r.id},'${r.status==='Active'?'Inactive':'Active'}')">${r.status==='Active'?'Nonaktifkan':'Aktifkan'}</button> <button class="btn d" onclick="dlt(${r.id})">Hapus</button></td></tr>`).join('')}</table></div>`);
+  A(MTABS()+`<form class="box" id="f" ${RO()?'style="display:none"':''}><div class="g">${[T('name','Tester Name',1),S('team','Team',['Material','Bonding','Stockfitting','Bonding & Stockfitting'],1),S('status','Status',['Active','Inactive'],1)].map(F).join('')}</div><button class="btn">+ Add New</button><p class="msg" id="m"></p></form>
+  <div class="box wrap"><table><tr><th>No.</th><th>Tester Name</th><th>Team</th><th>Status</th><th></th></tr>${data.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${esc(r.team)}</td><td>${tag(r.status||'')}</td><td>${RO()?'':`<button class="btn o" onclick="tst(${r.id},'${r.status==='Active'?'Inactive':'Active'}')">${r.status==='Active'?'Nonaktifkan':'Aktifkan'}</button> <button class="btn d" onclick="dlt(${r.id})">Hapus</button>`}</td></tr>`).join('')}</table></div>`);
   $('#f').onsubmit=async e=>{e.preventDefault();const o=Object.fromEntries([...new FormData(e.target)].map(([k,v])=>[k,v.trim()||null])),{error}=await sb.from('master_testers').insert(o);
     if(error){$('#m').className='msg er';$('#m').textContent='Gagal (hanya supervisor/admin): '+error.message}else{lt();masterTes()}};
 }
