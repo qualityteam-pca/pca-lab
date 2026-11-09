@@ -332,7 +332,7 @@ async function list(){
   if(error)return A('<p class="er">Akses ditolak / tabel belum dibuat.</p>');
   ROWS=data;
   A(`<div class="box"><div class="g"><label>Dari Tanggal<input id="d1" type="date" onchange="lf()"></label><label>Sampai Tanggal<input id="d2" type="date" onchange="lf()"></label><label>Cari<input id="q" oninput="lf()" placeholder="Cari data..."></label>${K==='mat'?`<label>Status Lab Out<select id="st" onchange="lf()"><option value="">Semua</option><option value="open">Belum complete (Lab Out kosong)</option><option value="done">Sudah complete</option></select></label>`:''}<label>Rentang cepat<select onchange="lq(this.value)"><option value="">Pilih...</option><option value="lw">Minggu lalu</option><option value="m">Bulan ini</option><option value="a">Semua</option></select></label></div>
-  <button class="btn" onclick="xl()">⬇ Download Excel</button> ${RO()?'':`<button class="btn o" onclick="tpl()">Template Excel</button> <label class="btn o" style="display:inline-block;cursor:pointer;color:var(--n)">⬆ Import Excel<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label>`} <small id="cnt"></small></div><div class="box wrap" id="tb"></div>`);lf();
+  <button class="btn" onclick="xl()">⬇ Download Excel</button> ${RO()?'':`<button class="btn o" onclick="tpl()">Template Excel</button> <label class="btn o" style="display:inline-block;cursor:pointer;color:var(--n)">⬆ Import Excel<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label>`} ${K==='tester'&&!RO()?'<button class="btn o" style="color:#dc2626" onclick="tdup()">🗑 Hapus Nama Sama</button> ':''}<small id="cnt"></small></div><div class="box wrap" id="tb"></div>`);lf();
 }
 const lq=v=>{const a=$('#d1'),b=$('#d2');if(v==='lw'){[a.value,b.value]=LW()}else if(v==='m'){const n=new Date();a.value=ld(new Date(n.getFullYear(),n.getMonth(),1));b.value=ld(n)}else{a.value='';b.value=''}lf()};
 function cur(){const m=MOD[K],a=$('#d1').value,b=$('#d2').value,q=$('#q').value.toLowerCase(),st=K==='mat'&&$('#st')?$('#st').value:'',lo=r=>r.lab_out_date&&String(r.lab_out_date)>='2000-01-01',o=ROWS.filter(r=>{const d=m.d(r)||r.created_at.slice(0,10);return(!a||d>=a)&&(!b||d<=b)&&(!q||m.f.some(f=>String(r[f[0]]??'').toLowerCase().includes(q)))&&(st!=='open'||!lo(r))&&(st!=='done'||lo(r))});if(st==='open')o.sort((x,y)=>String(x.lab_in_date)<String(y.lab_in_date)?-1:1);return o}
@@ -551,6 +551,20 @@ async function xl(){const R=cur(),m=MOD[K];if(!R.length)return alert('Tidak ada 
   await xbk(m,fs,heads,rows,1,`${m.t}_${$('#d1').value||'semua'}_${$('#d2').value||'semua'}.xlsx`)}
 async function tpl(){const m=MOD[K],fs=XF(m),heads=fs.map(f=>f[1]).concat(K==='fgt'?PRC:[]);
   await xbk(m,fs,heads,[],0,'template_'+m.t+'.xlsx')}
+function tdup(){if(RO()||!ses)return;
+  const key=n=>String(n||'').trim().toLowerCase().replace(/\s+/g,' '),g={},sc=r=>MOD.tester.a.filter(f=>String(r[f[0]]??'').trim()!=='').length;
+  ROWS.forEach(r=>{const k=key(r.name);if(k)(g[k]=g[k]||[]).push(r)});
+  const gr=Object.values(g).filter(a=>a.length>1).map(a=>{a=a.slice().sort((x,y)=>sc(y)-sc(x)||(String(x.created_at)<String(y.created_at)?-1:1));return{keep:a[0],del:a.slice(1)}});
+  if(!gr.length)return alert('Tidak ada tester dengan nama yang sama.');
+  window.TDUP=gr;const n=gr.reduce((s,x)=>s+x.del.length,0),dl=r=>esc((r.tester_id||'-')+' · '+String(r.created_at||'').slice(0,10));
+  MD(`<div class="box" style="background:#fff;width:min(900px,100%);margin:0"><h3>Hapus Tester dengan Nama Sama</h3><p>Ditemukan <b>${gr.length}</b> nama ganda. Data yang dihapus: <b class="er">${n}</b> baris. Yang dipertahankan per nama adalah data dengan isian paling lengkap (jika sama, yang paling lama dibuat).</p><div class="wrap" style="max-height:50vh;overflow:auto"><table><tr><th>Nama</th><th>Dipertahankan (Tester ID · dibuat)</th><th>Dihapus (Tester ID · dibuat)</th></tr>${gr.map(x=>`<tr><td>${esc(x.keep.name)}</td><td class="ok">${dl(x.keep)}</td><td class="er">${x.del.map(dl).join('<br>')}</td></tr>`).join('')}</table></div><p class="msg" id="tdm"></p><div style="margin-top:10px;display:flex;gap:8px"><button class="btn o" onclick="EDQ()">Batal</button><button class="btn" style="background:#dc2626" id="tdb" onclick="tdel()">Hapus ${n} Data Duplikat</button></div></div>`)}
+async function tdel(){if(RO()||!ses||!window.TDUP)return;
+  const ids=window.TDUP.flatMap(x=>x.del.map(r=>r.id)),b=$('#tdb'),m=$('#tdm');if(!confirm('Hapus '+ids.length+' data tester duplikat? Tindakan ini tidak bisa dibatalkan.'))return;
+  b.disabled=true;let done=0,err=null;
+  for(let i=0;i<ids.length;i+=100){m.textContent='Menghapus '+Math.min(i+100,ids.length)+' / '+ids.length+'...';const {data,error}=await sb.from('tester_pool').delete().in('id',ids.slice(i,i+100)).select('id');if(error){err=error.message;break}done+=(data||[]).length}
+  window.TDUP=null;
+  if(err||done<ids.length){m.className='msg er';m.textContent=(err?'Gagal: '+err+'. ':'')+'Terhapus '+done+' dari '+ids.length+(done<ids.length&&!err?' (kemungkinan akun tidak punya izin delete di Supabase).':'.');b.disabled=false;list();return}
+  EDQ();alert(done+' data duplikat berhasil dihapus.');list()}
 const nd=s=>{s=String(s).trim();const t=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);return t?t[3]+'-'+t[2].padStart(2,'0')+'-'+t[1].padStart(2,'0'):s.slice(0,10)};
 async function imp(el){if(RO())return;
   const file=el.files[0];if(!file)return;const m=MOD[K],map={};
