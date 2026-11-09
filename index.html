@@ -526,10 +526,11 @@ async function dperf(cached){
     A(band('PERFORMANCE DASHBOARD','TESTER – COMPLETENESS & KEBUTUHAN TESTER')+`<div class="box"><small><b>Cara baca:</b> Tanggal acuan = akhir Date Range (${DS.d2}). Harian = tanggal acuan; Mingguan = Senin–Sabtu pada minggu tersebut; Bulanan = bulan tersebut. Test complete: Bonding/Stockfitting = hasil Pass atau Fail; Material = sudah memiliki Lab Out Date. Hari kerja = Senin–Sabtu.</small>${PD.testers.length?'':'<br><small class="er">Master Data Tester masih kosong – tambahkan tester aktif agar kebutuhan tester dapat dihitung.</small>'}</div>`+ms.map(pSec).join(''));
   }catch(e){console.error(e);A(band('PERFORMANCE DASHBOARD','TESTER')+'<div class="box er"><b>Dashboard Performance gagal dimuat:</b> '+esc(e.message||e)+'<br><button class="btn" style="margin-top:8px" onclick="PD=null;dperf()">Coba lagi</button></div>')}
 }
+const XF=m=>K==='tester'?m.a.filter(f=>f[2]!=='check'):VF(m);
 function xl(){const R=cur(),m=MOD[K];if(!R.length)return alert('Tidak ada data pada rentang ini');
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(R.map((r,i)=>({'No.':i+1,...Object.fromEntries(VF(m).map(f=>[f[1],r[f[0]]??''])),...(K==='fgt'?Object.fromEntries(PRC.map(c=>[c,(r.proc_results||{})[c]??''])):{})}))),m.n.slice(0,30));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(R.map((r,i)=>({'No.':i+1,...Object.fromEntries(XF(m).map(f=>[f[1],r[f[0]]??''])),...(K==='fgt'?Object.fromEntries(PRC.map(c=>[c,(r.proc_results||{})[c]??''])):{})}))),m.n.slice(0,30));
   XLSX.writeFile(wb,`${m.t}_${$('#d1').value||'semua'}_${$('#d2').value||'semua'}.xlsx`)}
-async function tpl(){await LT;const m=MOD[K],fs=VF(m),heads=fs.map(f=>f[1]).concat(K==='fgt'?PRC:[]);
+async function tpl(){await LT;const m=MOD[K],fs=XF(m),heads=fs.map(f=>f[1]).concat(K==='fgt'?PRC:[]);
   if(typeof ExcelJS==='undefined'){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([heads]),m.n.slice(0,30));return XLSX.writeFile(wb,'template_'+m.t+'.xlsx')}
   const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet(m.n.slice(0,30)),ls=wb.addWorksheet('Lists');
   ws.addRow(heads);ws.getRow(1).font={bold:true};ws.views=[{state:'frozen',ySplit:1}];
