@@ -532,26 +532,30 @@ async function dperf(cached){
   }catch(e){console.error(e);A(band('PERFORMANCE DASHBOARD','TESTER')+'<div class="box er"><b>Dashboard Performance gagal dimuat:</b> '+esc(e.message||e)+'<br><button class="btn" style="margin-top:8px" onclick="PD=null;dperf()">Coba lagi</button></div>')}
 }
 const XF=m=>K==='tester'?m.a.filter(f=>f[2]!=='check'):VF(m);
-function xl(){const R=cur(),m=MOD[K];if(!R.length)return alert('Tidak ada data pada rentang ini');
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(R.map((r,i)=>({'No.':i+1,...Object.fromEntries(XF(m).map(f=>[f[1],r[f[0]]??''])),...(K==='fgt'?Object.fromEntries(PRC.map(c=>[c,(r.proc_results||{})[c]??''])):{})}))),m.n.slice(0,30));
-  XLSX.writeFile(wb,`${m.t}_${$('#d1').value||'semua'}_${$('#d2').value||'semua'}.xlsx`)}
-async function tpl(){await LT;const m=MOD[K],fs=XF(m),heads=fs.map(f=>f[1]).concat(K==='fgt'?PRC:[]);
-  if(typeof ExcelJS==='undefined'){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([heads]),m.n.slice(0,30));return XLSX.writeFile(wb,'template_'+m.t+'.xlsx')}
-  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet(m.n.slice(0,30)),ls=wb.addWorksheet('Lists');
-  ws.addRow(heads);ws.getRow(1).font={bold:true};ws.views=[{state:'frozen',ySplit:1}];
+const XJ=()=>typeof ExcelJS!=='undefined'?Promise.resolve():new Promise(ok=>{const e=document.createElement('script');e.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';e.onload=e.onerror=()=>ok();document.head.appendChild(e)});
+async function xbk(m,fs,heads,rows,off,nm){
+  await LT;await XJ();
+  if(typeof ExcelJS==='undefined'){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([heads,...rows]),m.n.slice(0,30));XLSX.writeFile(wb,nm);return alert('Library ExcelJS gagal dimuat, file dibuat tanpa dropdown.')}
+  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet(m.n.slice(0,30)),ls=wb.addWorksheet('Lists'),last=Math.max(2000,rows.length+500);
+  ws.addRow(heads);rows.forEach(r=>ws.addRow(r));ws.getRow(1).font={bold:true};ws.views=[{state:'frozen',ySplit:1}];
   heads.forEach((h,i)=>ws.getColumn(i+1).width=Math.max(14,String(h).length+4));
   let c=0;
   fs.forEach((f,i)=>{if(f[2]!=='select'||!f[3]||!f[3].length)return;c++;f[3].forEach((v,r)=>ls.getCell(r+1,c).value=v);
     const L=ls.getColumn(c).letter,ref='Lists!$'+L+'$1:$'+L+'$'+f[3].length;
-    for(let r=2;r<=2000;r++)ws.getCell(r,i+1).dataValidation={type:'list',allowBlank:true,showErrorMessage:true,errorTitle:'Pilihan tidak valid',error:'Pilih salah satu nilai dari dropdown.',formulae:[ref]}});
+    for(let r=2;r<=last;r++)ws.getCell(r,i+1+off).dataValidation={type:'list',allowBlank:true,showErrorMessage:true,errorTitle:'Pilihan tidak valid',error:'Pilih salah satu nilai dari dropdown.',formulae:[ref]}});
   ls.state='hidden';
   const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download='template_'+m.t+'.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+  a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=nm;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+async function xl(){const R=cur(),m=MOD[K];if(!R.length)return alert('Tidak ada data pada rentang ini');
+  const fs=XF(m),heads=['No.',...fs.map(f=>f[1]),...(K==='fgt'?PRC:[])],rows=R.map((r,i)=>[i+1,...fs.map(f=>r[f[0]]??''),...(K==='fgt'?PRC.map(c=>(r.proc_results||{})[c]??''):[])]);
+  await xbk(m,fs,heads,rows,1,`${m.t}_${$('#d1').value||'semua'}_${$('#d2').value||'semua'}.xlsx`)}
+async function tpl(){const m=MOD[K],fs=XF(m),heads=fs.map(f=>f[1]).concat(K==='fgt'?PRC:[]);
+  await xbk(m,fs,heads,[],0,'template_'+m.t+'.xlsx')}
 const nd=s=>{s=String(s).trim();const t=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);return t?t[3]+'-'+t[2].padStart(2,'0')+'-'+t[1].padStart(2,'0'):s.slice(0,10)};
 async function imp(el){if(RO())return;
   const file=el.files[0];if(!file)return;const m=MOD[K],map={};
   m.a.forEach(f=>{map[f[1].toLowerCase()]=f;map[f[0].toLowerCase()]=f});if(K==='mat')[['result retest','result_retest'],['result pass','result_retest'],['reason released – part testing','released_part_testing'],['reason released – standard','released_standard'],['reason released – test result','released_test_result'],['reason pass – part testing','released_part_testing'],['reason pass – standard','released_standard'],['reason pass – test result','released_test_result']].forEach(([a,b])=>{map[a]=m.f.find(f=>f[0]===b)});map['areas of reject (cm²)']=map['areas of reject (cm2)']=map['reject_area'];map['reject area (pisahkan koma)']=map['reject_zone']=m.f.find(f=>f[0]==='reject_zone')||map['reject area'];
-  const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}),raw=wb.SheetNames.flatMap(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{defval:''}));
+  const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}),raw=wb.SheetNames.filter(n=>n!=='Lists').flatMap(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{defval:''}));
   const bad=Object.keys(Object.assign({},...raw)).filter(h=>!['no.','no'].includes(h.trim().toLowerCase())&&!map[h.trim().toLowerCase()]&&!(K==='fgt'&&PRC.some(c=>c.toLowerCase()===h.trim().toLowerCase())));
   let rows=raw.map(r=>{const o={};for(const [h,v] of Object.entries(r)){const pc=K==='fgt'&&PRC.find(c=>c.toLowerCase()===h.trim().toLowerCase());if(pc){if(String(v).trim()!=='')(o.proc_results=o.proc_results||{})[pc]=String(v).trim();continue}const f=map[h.trim().toLowerCase()];if(!f||v==='')continue;let x;
     if(f[2]==='date')x=typeof v==='number'?iso(new Date(Math.round((v-25569)*864e5))):nd(v);
