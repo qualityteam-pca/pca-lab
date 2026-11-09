@@ -294,7 +294,7 @@ const resI=m=>[{g:'Pass',n:m.pass||0,c:'#10b981'},{g:'Fail',n:m.fail||0,c:'#ef44
 const DL={material_type:'Material Type',supplier_name:'Supplier',article:'Article',category:'Category',factory:'Factory',season:'Season',country:'Country',line:'Line',gender:'Gender',test_level:'Test Level',destination:'Destination'};
 const hbar=(rows,c,ck)=>{const mx=Math.max(1,...(rows||[]).map(r=>r.n));return (rows||[]).map(r=>`<div class="hb" ${r.on||(ck?QF(ck[0],ck[1],r.g,r.g):'')}><span>${esc(r.g)} (${r.n})</span><div><i style="width:${r.n*100/mx}%;background:${c||'linear-gradient(90deg,#1d4ed8,#38bdf8)'}">${r.n}</i></div></div>`).join('')||'<small>Belum ada data</small>'};
 const G=(m,g)=>`<div style="display:grid;gap:10px">${m.a.filter(f=>f[6]===g).map(F).join('')}</div>`;
-const TP=m=>`<div class="tp"><div><h3>TESTER PROFILE</h3>${G(m,'P')}</div><div><h3>FOOT MEASUREMENT</h3>${G(m,'M')}<div class="tp2"><div class="sh"><h3>RIGHT FOOT</h3>${G(m,'R')}</div><div class="sh"><h3>LEFT FOOT</h3>${G(m,'L')}</div></div></div></div>`;
+const TP=m=>`<div class="tp"><div><h3>TESTER PROFILE</h3>${G(m,'P')}</div><div><h3>FOOT MEASUREMENT</h3><div class="tp2"><div class="sh"><h3>RIGHT FOOT</h3>${G(m,'R')}</div><div class="sh"><h3>LEFT FOOT</h3>${G(m,'L')}</div></div><div style="margin-top:12px">${G(m,'M')}</div></div></div>`;
 async function tpool(){
   const {data}=await sb.rpc('dash_tester'),x=data||{total:0,width:{}};
   return `<h2 style="text-transform:uppercase;margin:6px 0 12px">Tester Pool</h2><div class="k3"><div class="box"><h4>TOTAL TESTER</h4><b>${x.total}</b></div><div class="box"><h4>AVG HEIGHT (CM)</h4><b>${x.h??'-'}</b></div><div class="box"><h4>AVG WEIGHT (KG)</h4><b>${x.w??'-'}</b></div></div>
