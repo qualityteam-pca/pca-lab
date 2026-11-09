@@ -562,9 +562,8 @@ async function tdel(){if(RO()||!ses||!window.TDUP)return;
   const ids=window.TDUP.flatMap(x=>x.del.map(r=>r.id)),b=$('#tdb'),m=$('#tdm');if(!confirm('Hapus '+ids.length+' data tester duplikat? Tindakan ini tidak bisa dibatalkan.'))return;
   b.disabled=true;let done=0,err=null;
   for(let i=0;i<ids.length;i+=100){m.textContent='Menghapus '+Math.min(i+100,ids.length)+' / '+ids.length+'...';const {data,error}=await sb.from('tester_pool').delete().in('id',ids.slice(i,i+100)).select('id');if(error){err=error.message;break}done+=(data||[]).length}
-  window.TDUP=null;
   if(err||done<ids.length){m.className='msg er';m.textContent=(err?'Gagal: '+err+'. ':'')+'Terhapus '+done+' dari '+ids.length+(done<ids.length&&!err?' (kemungkinan akun tidak punya izin delete di Supabase).':'.');b.disabled=false;list();return}
-  EDQ();alert(done+' data duplikat berhasil dihapus.');list()}
+  window.TDUP=null;EDQ();alert(done+' data duplikat berhasil dihapus.');list()}
 const nd=s=>{s=String(s).trim();const t=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);return t?t[3]+'-'+t[2].padStart(2,'0')+'-'+t[1].padStart(2,'0'):s.slice(0,10)};
 async function imp(el){if(RO())return;
   const file=el.files[0];if(!file)return;const m=MOD[K],map={};
