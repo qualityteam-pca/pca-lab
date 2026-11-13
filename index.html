@@ -128,7 +128,7 @@ for(let t=lo;t<=100;t+=step)g+=`<line x1="${X(t)}" x2="${X(t)}" y1="${top}" y2="
 if(lo<95)g+=`<line x1="${X(95)}" x2="${X(95)}" y1="${top}" y2="${top+a.length*rh}" stroke="#64748b" stroke-dasharray="4 3"/>`;
 a.forEach((r,n)=>{const v=pc[n],y=top+n*rh,col=v>=95?'#1d4ed8':v>=90?'#d97706':'#dc2626';
 g+=`<g onclick="dd('l','${encodeURIComponent(r.src.join('|'))}')" style="cursor:pointer"><title>${esc(r.l)}: ${r.pass} dari ${r.total} pass (${v.toFixed(1)}%)</title><rect x="0" y="${y}" width="${W}" height="${rh}" fill="transparent"/><text x="${lw}" y="${y+rh/2+4.5}" text-anchor="end" font-size="13" font-weight="600" fill="#0f172a">${esc(r.l)}</text><rect x="${x0}" y="${y+5}" width="${Math.max(3,X(v)-x0)}" height="${rh-10}" rx="3" fill="${col}"/><text x="${x0+pw+8}" y="${y+rh/2+4.5}" font-size="13" font-weight="700" fill="#0f172a">${v.toFixed(1)}%</text><text x="${W-2}" y="${y+rh/2+4.5}" text-anchor="end" font-size="11" fill="#64748b">${r.total}</text></g>`});
-return`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Quality rate" style="display:block;max-width:640px">${g}</svg><small class="qhnote">Sumbu X: Quality Rate (%), dimulai dari ${lo}% · garis putus-putus = 95% · biru ≥95% · oranye 90–95% · merah &lt;90% · angka kanan = jumlah pengujian</small>`};
+return`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Quality rate" style="display:block;max-width:760px;min-width:min(100%,420px)">${g}</svg><small class="qhnote">Sumbu X: Quality Rate (%), dimulai dari ${lo}% · garis putus-putus = 95% · biru ≥95% · oranye 90–95% · merah &lt;90% · angka kanan = jumlah pengujian</small>`};
 const QBG=lines=>{const g={},st=K==='stock',f=(lines||[]).filter(r=>st?/^stock/i.test(r.l):!/^stock/i.test(r.l));
 LG2(f).forEach(r=>{const m=/^\s*(F\d+)/i.exec(r.l),k=m?m[1].toUpperCase():st?'Stockfitting':'Lainnya';(g[k]=g[k]||[]).push(r)});
 return{g,ks:Object.keys(g).sort((a,b)=>a==='Lainnya'?1:b==='Lainnya'?-1:a.localeCompare(b,undefined,{numeric:true}))}};
@@ -139,8 +139,8 @@ if(!ks.length)return`<div class="box"><h3>Quality Rate per Line – ${nm}</h3><s
 if(K==='stock'||ks.length===1){const a=ks.flatMap(k=>g[k]);return`<div class="box"><h3>Quality Rate per Line – ${nm}</h3>${QBS(a)}${QBH(a)}</div>`}
 if(!ks.includes(QB.sel))QB.sel=ks[0];
 const bl=ks.map(k=>{const a=g[k];return{l:k==='Lainnya'?k:'Building '+k,pass:a.reduce((n,r)=>n+r.pass,0),total:a.reduce((n,r)=>n+r.total,0),src:a.flatMap(r=>r.src)}});
-return`<div class="tp qbp"><div class="box"><div class="bh"><h3 style="margin:0">Quality Rate per Line – ${nm}</h3><select class="bsel" onchange="QB.sel=this.value;$('#qbl').innerHTML=QBR()">${ks.map(k=>`<option value="${k}"${k===QB.sel?' selected':''}>${k==='Lainnya'?'Lainnya':'Building '+k}</option>`).join('')}</select></div><div id="qbl">${QBR()}</div></div>
-<div class="box"><div class="bh"><h3 style="margin:0">Quality Rate per Building – ${nm}</h3></div>${QBS(bl)}${QBH(bl)}</div></div>`};
+return`<div class="box"><div class="bh"><h3 style="margin:0">Quality Rate per Line – ${nm}</h3><select class="bsel" onchange="QB.sel=this.value;$('#qbl').innerHTML=QBR()">${ks.map(k=>`<option value="${k}"${k===QB.sel?' selected':''}>${k==='Lainnya'?'Lainnya':'Building '+k}</option>`).join('')}</select></div><div id="qbl">${QBR()}</div></div>
+<div class="box"><div class="bh"><h3 style="margin:0">Quality Rate per Building – ${nm}</h3></div>${QBS(bl)}${QBH(bl)}</div>`};
 const vb=a=>`<div class="vb">${a.map(x=>`<div${x.c?` onclick="${x.c}" style="cursor:pointer"`:''}>${x.v}<i style="height:${x.h}%"></i>${esc(x.l)}</div>`).join('')||'<small>Belum ada data</small>'}</div>`;
 const ld=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),
 LW=()=>{const n=new Date(),w=(n.getDay()+6)%7,a=new Date(n.getFullYear(),n.getMonth(),n.getDate()-w-7),b=new Date(a.getFullYear(),a.getMonth(),a.getDate()+6);return[ld(a),ld(b)]},
