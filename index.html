@@ -53,7 +53,24 @@ body{background:linear-gradient(135deg,#e8f0ff,#f7faff 45%,#e9f6f3)}aside{backgr
 .vd{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:10px}.vd>div{border-radius:10px;padding:12px 14px;background:#fff;border-left:6px solid var(--c);box-shadow:0 4px 12px #0f1c3a14}.vd h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.5px}.vd b.big{font-size:20px}
 .pcal td:last-child{font-weight:700;text-align:right}.pcal input,.pcal select{width:100px;padding:4px 6px}
 [onclick]{cursor:pointer}.pnl .box h3{font-size:13px}.pnl .box svg text{font-family:inherit}.dn2{width:150px}
+
+#intro{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 38%,#17428f,#09122b 68%);display:grid;place-items:center;color:#fff;text-align:center;transition:opacity .8s ease,visibility .8s ease;overflow:hidden}
+#intro.out{opacity:0;visibility:hidden}
+#intro:before,#intro:after{content:'';position:absolute;width:60vmax;height:60vmax;border-radius:50%;filter:blur(90px);opacity:.28;animation:ib 9s ease-in-out infinite alternate}
+#intro:before{background:#2563eb;left:-20vmax;top:-25vmax}#intro:after{background:#10b981;right:-22vmax;bottom:-28vmax;animation-delay:-4s}
+@keyframes ib{to{transform:translate(8vmax,6vmax) scale(1.15)}}
+@keyframes ig{to{background-position:300% 0}}
+#intro .gr{position:relative;font-size:clamp(46px,10vw,104px);font-weight:600;letter-spacing:-1px;line-height:1.15;padding:0 .1em;background:linear-gradient(90deg,#60a5fa,#38bdf8,#34d399,#a78bfa,#f472b6,#60a5fa);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:ig 3.2s linear infinite;opacity:0;transform:translateY(10px) scale(.97);transition:opacity .2s ease,transform .3s ease}
+#intro .gr.show{opacity:1;transform:none}
+#intro .fin{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:10px;opacity:0;transform:scale(.94);transition:opacity .8s ease,transform .9s cubic-bezier(.2,.8,.2,1);pointer-events:none;padding:0 20px}
+#intro .fin.show{opacity:1;transform:none}
+#intro .fin img{width:96px;height:96px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 5px #2563eb,0 12px 40px #2563eb88}
+#intro .fin h1{margin:10px 0 0;font-size:clamp(22px,4.5vw,36px);letter-spacing:3px}
+#intro .fin p{margin:0;color:#9db7ff;letter-spacing:2px;font-size:clamp(11px,2vw,14px);text-transform:uppercase}
+#intro .sk{position:absolute;bottom:26px;right:26px;background:#ffffff1a;color:#fff;border:1px solid #ffffff44;border-radius:20px;padding:7px 16px;font:inherit;font-size:12px;cursor:pointer;backdrop-filter:blur(6px)}
+#intro .sk:hover{background:#ffffff33}
 </style></head><body>
+<div id="intro"><div class="gr" id="ig" dir="auto"></div><div class="fin" id="ifin"><img id="ilogo" alt=""><h1>LABORATORY MANAGEMENT SYSTEM</h1><p>PCA · Quality &amp; Compliance</p></div><button class="sk" id="isk" type="button">Lewati ›</button></div><script>try{if(sessionStorage.getItem('pca_intro'))document.getElementById('intro').remove()}catch(e){}</script>
 <aside id="nav"></aside>
 <section><div class="top" id="top"></div><div id="main">Memuat...</div></section>
 <script>
@@ -626,4 +643,19 @@ function login(){
 const chk=async()=>{INT=ses?!!(await sb.rpc('is_internal')).data:false;render()};
 sb.auth.onAuthStateChange((_e,s)=>{const was=!!ses;ses=s;lt();if(!s&&was)view='dmat';if(s&&view==='login')view='lmat';render();setTimeout(chk,0)});
 sb.auth.getSession().then(({data})=>{ses=data.session;lt();render();chk()});
-</script></body></html>
+</script>
+<script>
+(()=>{const box=document.getElementById('intro');if(!box)return;
+const G=['Halo','Hello','Hola','Bonjour','こんにちは','你好','안녕하세요','Hallo','Ciao','Olá','Привет','สวัสดี','नमस्ते','مرحبا','Xin chào','Merhaba','Sawubona','Selamat datang'],
+ g=document.getElementById('ig'),fin=document.getElementById('ifin'),sk=document.getElementById('isk'),
+ rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+try{document.getElementById('ilogo').src=typeof LOGO!=='undefined'?LOGO:''}catch(e){}
+try{sessionStorage.setItem('pca_intro','1')}catch(e){}
+let done=false,T=[];const at=(f,ms)=>T.push(setTimeout(f,ms));
+const end=()=>{if(done)return;done=true;T.forEach(clearTimeout);box.classList.add('out');setTimeout(()=>box.remove(),900)};
+const finale=()=>{g.classList.remove('show');at(()=>{fin.classList.add('show');sk.style.display='none'},rm?0:250);at(end,rm?1400:2600)};
+sk.onclick=end;addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Enter')end()});
+if(rm)finale();else{const st=480;G.forEach((w,i)=>{at(()=>{g.classList.remove('show');at(()=>{g.textContent=w;g.classList.add('show')},170)},i*st)});at(finale,G.length*st+250)}
+})();
+</script>
+</body></html>
