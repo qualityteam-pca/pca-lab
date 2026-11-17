@@ -656,7 +656,7 @@ async function dperf(cached){
     A(band('PERFORMANCE DASHBOARD','TESTER – COMPLETENESS & KEBUTUHAN TESTER')+`<div class="box"><small><b>Cara baca:</b> Tanggal acuan = akhir Date Range (${DS.d2}). Harian = tanggal acuan; Mingguan = Senin–Sabtu pada minggu tersebut; Bulanan = bulan tersebut. Test complete: Bonding/Stockfitting = hasil Pass atau Fail; Material = sudah memiliki Lab Out Date. Hari kerja = Senin–Sabtu.</small>${PD.testers.length?'':'<br><small class="er">Master Data Tester masih kosong – tambahkan tester aktif agar kebutuhan tester dapat dihitung.</small>'}</div>`+ms.map(pSec).join(''));
   }catch(e){console.error(e);A(band('PERFORMANCE DASHBOARD','TESTER')+'<div class="box er"><b>Dashboard Performance gagal dimuat:</b> '+esc(e.message||e)+'<br><button class="btn" style="margin-top:8px" onclick="PD=null;dperf()">Coba lagi</button></div>')}
 }
-const XF=m=>K==='tester'?m.a.filter(f=>f[2]!=='check'):VF(m);
+const XF=m=>K==='tester'?m.a.filter(f=>f[2]!=='check'):VF(m).filter(f=>!(f[0]==='scope'&&/^(bond|stock)$/.test(K)));
 const XJ=()=>typeof ExcelJS!=='undefined'?Promise.resolve():new Promise(ok=>{const e=document.createElement('script');e.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';e.onload=e.onerror=()=>ok();document.head.appendChild(e)});
 async function xbk(m,fs,heads,rows,off,nm){
   await LT;await XJ();
