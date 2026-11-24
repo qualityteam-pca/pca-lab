@@ -692,6 +692,52 @@ async function tdel(){if(RO()||!ses||!window.TDUP)return;
   if(err||done<ids.length){m.className='msg er';m.textContent=(err?'Gagal: '+err+'. ':'')+'Terhapus '+done+' dari '+ids.length+(done<ids.length&&!err?' (kemungkinan akun tidak punya izin delete di Supabase).':'.');b.disabled=false;list();return}
   window.TDUP=null;EDQ();alert(done+' data duplikat berhasil dihapus.');list()}
 const nd=s=>{s=String(s).trim();const t=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);return t?t[3]+'-'+t[2].padStart(2,'0')+'-'+t[1].padStart(2,'0'):s.slice(0,10)};
+/* ===== Import Material Testing: UPDATE baris yang sudah ada (cocok via Lab Test No.), baris tidak ada = baru ===== */
+const mnorm=v=>v==null?'':String(v).trim().toLowerCase().replace(/\s+/g,' '),
+ mval=(k,v)=>v==null||v===''?'':/_date$/.test(k)?String(v).slice(0,10):mnorm(v),
+ mlab=v=>String(v==null?'':v).replace(/\s+/g,'').toLowerCase(),
+ MID=['article','supplier_name','material_number','colour','material_description','material_name','lab_in_date'],
+ MSC=['article','supplier_name','colour','material_name','material_type','material_description'],
+ mid=r=>MID.map(k=>mval(k,r[k])).join('|');
+function mplan(rows,ex){
+  const byLab={},byId={},used=new Set(),pairs=[],left=[],ins=[],upd=[];let same=0;
+  ex.forEach(e=>{const l=mlab(e.lab_test_no);if(l)(byLab[l]=byLab[l]||[]).push(e);const i=mid(e);(byId[i]=byId[i]||[]).push(e)});
+  const sc=(r,e)=>MSC.reduce((s,k)=>s+(mval(k,r[k])===mval(k,e[k])?1:0),0);
+  // 1) cocokkan lewat Lab Test No. (jika kembar, pilih yang paling mirip)
+  rows.forEach(r=>{const l=mlab(r.lab_test_no);let best=null,bs=-1;
+    if(l)(byLab[l]||[]).forEach(e=>{if(used.has(e.id))return;const s=sc(r,e);if(s>bs){bs=s;best=e}});
+    if(best){used.add(best.id);pairs.push([r,best])}else left.push(r)});
+  // 2) sisanya (Lab Test No. kosong / berubah): cocokkan lewat identitas material + tanggal Lab In
+  left.forEach(r=>{const e=(byId[mid(r)]||[]).find(e=>!used.has(e.id));if(e){used.add(e.id);pairs.push([r,e])}else ins.push(r)});
+  pairs.forEach(([r,e])=>{const p={};Object.keys(r).forEach(k=>{if(mval(k,r[k])!==mval(k,e[k]))p[k]=r[k]});Object.keys(p).length?upd.push({id:e.id,p}):same++});
+  return {upd,ins,same}
+}
+async function impMat(el,rows,wb,bad){
+  const m=MOD.mat,ex=[];
+  for(let a=0;;a+=1000){$('#cnt').textContent='Memeriksa data yang sudah ada... '+a;const {data,error}=await sb.from(m.t).select('*').order('id').range(a,a+999);if(error){el.value='';$('#cnt').textContent='';return alert('Gagal memeriksa data yang sudah ada: '+error.message)}ex.push(...data);if(data.length<1000)break}
+  $('#cnt').textContent='';
+  const {upd,ins,same}=mplan(rows,ex);
+  if(!upd.length&&!ins.length){el.value='';return alert('Semua '+rows.length+' baris sudah sama dengan data di sistem.\nTidak ada yang diupdate dan tidak ada baris baru.')}
+  const ch={},lbl=k=>(m.f.find(f=>f[0]===k)||[0,k])[1];upd.forEach(u=>Object.keys(u.p).forEach(k=>ch[k]=(ch[k]||0)+1));
+  const chs=Object.entries(ch).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,n])=>'  • '+lbl(k)+': '+n+' baris').join('\n');
+  if(!confirm('Import '+rows.length+' baris ke '+m.n+' ('+wb.SheetNames.length+' sheet dibaca):\n\n• '+upd.length+' baris akan DIUPDATE (data lama diperbarui, bukan baris baru)\n• '+ins.length+' baris BARU (belum ada di sistem)\n• '+same+' baris tidak berubah (dilewati)'+(chs?'\n\nKolom yang berubah:\n'+chs:'')+(bad.length?'\n\nKolom tidak dikenali (diabaikan):\n'+bad.join(', '):'')+'\n\nLanjutkan?'))return el.value='';
+  let uok=0,iok=0;const errs=[],S=500,C=10;
+  for(let i=0;i<upd.length;i+=C){
+    $('#cnt').textContent='Mengupdate '+Math.min(i+C,upd.length)+' / '+upd.length+'...';
+    await Promise.all(upd.slice(i,i+C).map(async u=>{const {data,error}=await sb.from(m.t).update(u.p).eq('id',u.id).select('id');
+      if(error){if(errs.length<10)errs.push('Update ID '+u.id+': '+error.message)}
+      else if(!data||!data.length){if(errs.length<10)errs.push('Update ID '+u.id+': tidak ada baris yang berubah (kemungkinan tidak punya izin update)')}
+      else uok++}))}
+  for(let i=0;i<ins.length;i+=S){
+    $('#cnt').textContent='Menambah baris baru '+Math.min(i+S,ins.length)+' / '+ins.length+'...';
+    const c=ins.slice(i,i+S),{error}=await sb.from(m.t).insert(c);
+    if(!error){iok+=c.length;continue}
+    for(let j=0;j<c.length;j++){const {error:e2}=await sb.from(m.t).insert(c[j]);if(e2){if(errs.length<10)errs.push('Baris baru ke-'+(i+j+1)+': '+e2.message)}else iok++}}
+  el.value='';
+  const fail=(upd.length-uok)+(ins.length-iok);
+  alert((fail?'Selesai dengan sebagian gagal.':'Import selesai ✔')+'\n\n• '+uok+' baris DIUPDATE'+(uok<upd.length?' (dari '+upd.length+')':'')+'\n• '+iok+' baris BARU ditambahkan'+(iok<ins.length?' (dari '+ins.length+')':'')+'\n• '+same+' baris tidak berubah'+(errs.length?'\n\nGagal (maks 10 ditampilkan):\n'+errs.join('\n'):''));
+  list();
+}
 async function imp(el){if(RO())return;
   const file=el.files[0];if(!file)return;const m=MOD[K],map={};
   m.a.forEach(f=>{map[f[1].toLowerCase()]=f;map[f[0].toLowerCase()]=f});if(K==='mat')[['result retest','result_retest'],['result pass','result_retest'],['reason released – part testing','released_part_testing'],['reason released – standard','released_standard'],['reason released – test result','released_test_result'],['reason pass – part testing','released_part_testing'],['reason pass – standard','released_standard'],['reason pass – test result','released_test_result']].forEach(([a,b])=>{map[a]=m.f.find(f=>f[0]===b)});if(/^(bond|stock)$/.test(K)){[['po. no.','po_no'],['po. no','po_no'],['number of reject intervals in 1 specimen','reject_intervals'],['area of reject','reject_area'],['areas of reject','reject_area'],['min','min_val'],['max','max_val'],['average','avg_val'],['avg','avg_val'],['size','size_no'],['date','test_date'],['main adhesive supplier','adhesive_supplier']].forEach(([a,b])=>{map[a]=m.a.find(f=>f[0]===b)})}map['data type']=m.a.find(f=>f[0]==='scope')||map['data type'];map['areas of reject (cm²)']=map['areas of reject (cm2)']=map['reject_area'];map['reject area (pisahkan koma)']=map['reject_zone']=m.f.find(f=>f[0]==='reject_zone')||map['reject area'];
@@ -704,6 +750,7 @@ async function imp(el){if(RO())return;
     if(f[0]==='size_no')x=x.replace(/^(\d+)\.(\d+)$/,'$1,$2');if(f[0]==='reject_zone'||f[0]==='reject_area'||f[0]==='reject_intervals')x=x.split(/[,;\/]/).map(s=>s.trim()).filter(Boolean).join(', ');if(x===''||Number.isNaN(x))continue;o[f[0]]=x}return o}).filter(o=>Object.keys(o).length);
   if(!rows.length){el.value='';return alert('Tidak ada baris yang cocok. Gunakan header dari Template Excel.')}
   if(K==='tester')rows.forEach(r=>jf(r));
+  if(K==='mat')return impMat(el,rows,wb,bad);
 
   if(/^(bond|stock)$/.test(K)){const bk=rows.length;rows=rows.filter(r=>!r.line_no||(K==='stock')===/^stock/i.test(r.line_no));if(rows.length<bk)alert((bk-rows.length)+' baris dilewati karena kode Line No. tidak sesuai modul ('+(K==='stock'?'Stockfitting hanya menerima line Stock-...':'Bonding tidak menerima line Stock-...')+').');if(!rows.length){el.value='';return}}
   if(/^(bond|stock)$/.test(K))rows.forEach(r=>r.scope=INT?(r.scope||SC):'Eksternal');
