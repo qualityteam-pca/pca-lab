@@ -117,6 +117,192 @@ aside img{border:3px solid var(--gold)}
 <aside id="nav"></aside>
 <section><div class="top" id="top"></div><div id="main">Memuat...</div></section>
 <script>
+/* ===== Bilingual layer (ID / EN) — hanya mengubah teks tampilan; data, nilai dropdown & logika tidak diubah ===== */
+(()=>{
+const LS='pca_lang';let LANG='id';
+try{const s=localStorage.getItem(LS);if(s==='en'||s==='id')LANG=s}catch(e){}
+/* [EN, ID, ...alias sumber]. Istilah teknis (Pass, Fail, On Progress, nama kolom Excel, nama modul) sengaja tidak diterjemahkan. */
+const P=[
+['Loading...','Memuat...'],['Skip ›','Lewati ›'],
+['Laboratory Staff Login','Login Staf Laboratorium'],['Password','Kata Sandi'],['Enter username or email','Masukkan username atau email'],
+['Sign in to access test data, data entry, and laboratory master data.','Masuk untuk mengakses data pengujian, input data, dan master data laboratorium.'],
+['Access is restricted to authorized laboratory personnel. The dashboard can still be viewed without logging in.','Akses khusus personel laboratorium yang berwenang. Dashboard tetap dapat dilihat tanpa login.'],
+['Test Data Details Are Private','Detail Data Testing Bersifat Pribadi'],
+['Test data details are private and can only be accessed by authorized laboratory personnel. Please log in first to view them.','Detail data testing bersifat pribadi dan hanya dapat diakses oleh personel laboratorium yang berwenang. Mohon login terlebih dahulu untuk melihatnya.'],
+['Summary of laboratory test quality indicators, updated live from the system. Per-test details are managed and protected by the laboratory team.','Ringkasan indikator mutu pengujian laboratorium yang diperbarui langsung dari sistem. Rincian data per pengujian dikelola dan dilindungi oleh tim laboratorium.'],
+['🔒 Log in to see the latest data','🔒 Login untuk melihat data terbaru'],
+['This page is only for registered accounts.','Halaman ini hanya untuk akun terdaftar.'],
+['Internal menu is only for authorized accounts.','Menu internal hanya untuk akun yang diizinkan.'],
+['Access denied.','Akses ditolak.'],['Access denied / table has not been created.','Akses ditolak / tabel belum dibuat.'],
+['Incorrect username or password.','Username atau password salah.'],['Failed to log in:','Gagal login:'],
+['Failed (login required):','Gagal (perlu login):'],['Failed (supervisor/admin only):','Gagal (hanya supervisor/admin):'],['Failed to download:','Gagal download:'],['Failed to save:','Gagal simpan:'],['Failed:','Gagal:'],
+['An error occurred:','Terjadi kesalahan:'],['Dashboard Performance failed to load:','Dashboard Performance gagal dimuat:'],
+/* menu */
+['INTERNAL DASHBOARD','DASHBOARD INTERNAL'],['INTERNAL DATA','DATA INTERNAL'],['ACCOUNT','AKUN'],['Calibration','Kalibrasi'],['Performance','Kinerja'],['Logout','Keluar'],['Login','Masuk'],
+/* tombol & umum */
+['Save','Simpan'],['Save Changes','Simpan Perubahan'],['Cancel','Batal'],['Delete','Hapus'],['View','Lihat'],['View list','Lihat daftar'],['Close','Tutup'],['Try again','Coba lagi'],
+['Search','Cari'],['Search data...','Cari data...'],['Delete data','Hapus data'],['Select all on this page','Pilih semua di halaman ini'],['Select','Pilih'],['Select...','Pilih...'],
+['All','Semua'],['All data','Semua data'],['Excel Template','Template Excel'],['Delete photo','Hapus foto'],['Change profile photo','Ganti foto profil'],['Actions','Aksi','Aksi'],
+['Rows per page','Baris per halaman'],['Page','Halaman'],['‹ Prev','‹ Sebelumnya'],['Next ›','Berikutnya ›'],['No data yet','Belum ada data'],['No data.','Tidak ada data.'],
+['From Date','Dari Tanggal'],['To Date','Sampai Tanggal'],['DATE RANGE','RENTANG TANGGAL'],['Quick range','Rentang cepat'],['Quick range...','Rentang cepat...'],['Last week','Minggu lalu'],['This month','Bulan ini'],['This year','Tahun ini'],['Last 30 days','30 hari terakhir'],
+['Lab Out Status','Status Lab Out'],['Not complete (Lab Out empty)','Belum complete (Lab Out kosong)'],['Completed','Sudah complete'],['Name','Nama'],['Source','Sumber'],['Notes','Catatan'],['Result / notes','Hasil / catatan'],
+['Data Source:','Sumber data dashboard:'],['Detail','Detail'],['Status','Status'],
+/* dashboard */
+['TOTAL TEST','TOTAL PENGUJIAN'],['Total Tests','Total Pengujian'],['Total Records','Total Data'],['Trend per Day','Tren per Hari'],['Quality Rate','Tingkat Mutu'],['Quality Rate Monthly','Tingkat Mutu Bulanan'],['Quality Rate Weekly','Tingkat Mutu Mingguan'],
+['Result Trend per Month','Tren Hasil per Bulan','Result Trend per Bulan'],['FGT Result per Month','Hasil FGT per Bulan','FGT Result per Bulan'],
+['Recent Material Testing Data','Data Material Testing Terbaru'],['Recent FGT Data','Data FGT Terbaru'],['Recent OCPT Data','Data OCPT Terbaru'],['Recent Tester Pool Data','Data Tester Pool Terbaru'],
+['Test Complete Monthly (12 months)','Test Complete Bulanan (12 bulan)'],['Test Complete Weekly (12 weeks)','Test Complete Mingguan (12 minggu)'],['Test Complete Daily (last 30 days, Monday–Saturday)','Test Complete Harian (30 hari terakhir, Senin–Sabtu)'],
+['Target vs Achievement This Month','Capaian vs Target Bulan'],['Completeness This Month','Completeness Bulan Ini'],['Achievement','Capaian'],['Target','Target'],
+['Backlog (no Lab Out yet)','Backlog (belum Lab Out)'],['Total backlog','Total backlog'],['Backlog > 8 working days','Backlog > 8 hari kerja'],['> 8 working days','> 8 hari kerja'],['Not complete','Belum complete'],
+['Not complete (incoming within Date Range)','Belum complete (incoming dalam Date Range)'],['Materials not yet complete (no Lab Out)','Material belum complete (belum Lab Out)'],['List of Materials Not Yet Complete (no Lab Out yet)','Daftar Material Belum Complete (belum Lab Out)'],
+['Avg Lead (days)','Avg Lead (hari)'],['Oldest (days)','Terlama (hari)'],['Age (working days)','Umur (hari kerja)'],['Days Left','Sisa Hari'],['Due','Jatuh Tempo'],
+['COMPLETE THIS MONTH','COMPLETE BULAN INI'],['COMPLETE TODAY','COMPLETE HARI INI'],['COMPLETE THIS WEEK','COMPLETE MINGGU INI'],['Complete this month','Complete bulan ini'],['Complete today','Complete hari ini'],['Complete this week','Complete minggu ini'],
+['Number of tests per day','Jumlah test per hari'],['Number of completed tests','Jumlah test complete'],['Completed tests per day','Test complete per hari'],['Number of cases','Jumlah kasus'],['Number of cases (click for details)','Jumlah kasus (klik untuk detail)'],['Number of tests (click for details)','Jumlah test (klik untuk detail)'],
+['Number of records per day (FGT and CT)','Jumlah data per hari (FGT dan CT)'],['Number of new testers per day','Jumlah tester baru per hari'],['Week start (month-day)','Awal minggu (bulan-tanggal)'],['Month','Bulan'],['Age range (years)','Rentang usia (tahun)'],
+['Lead Time Incoming → Report (working days Monday–Saturday)','Lead Time Incoming → Report (hari kerja Senin–Sabtu)'],['SCHEDULE ≤ 30 DAYS','JADWAL ≤ 30 HARI'],
+['Notification: 3rd Party Calibration Due (Yearly) ≤ 60 Days & Overdue','Pemberitahuan: Jatuh Tempo Kalibrasi 3rd Party (Yearly) ≤ 60 Hari & Terlewat'],['No calibration due in the next 60 days','Tidak ada jatuh tempo dalam 60 hari ke depan'],
+['No rejects','Tidak ada reject'],['Order: highest Pass Rate, then highest number of tests.','Urutan: Pass Rate tertinggi, lalu jumlah test terbanyak.'],
+['Suppliers with at least 5 tests and at least one fail. Figure = Fail ÷ Total tests. Click a bar to see the data.','Supplier dengan minimal 5 test dan ada fail. Angka = Fail ÷ Total test. Klik batang untuk melihat data.'],
+['Test Performance by Destination','Test Performance by Destination'],['A record with several countries is counted per country.','Satu record dengan beberapa negara dihitung per negara.'],
+['Drag the chart right/left to see everything','↔ Geser grafik ke kanan/kiri untuk melihat semua'],['Hardness','Hardness'],
+['Material Test Performance – Top 5 Articles','Material Test Performance – Top 5 Articles'],
+['Capacity (tests / tester / day)','Kapasitas (test / tester / hari)'],['Utilization target (%)','Target utilisasi (%)'],['Test demand, daily bonding test (specimens/day) – D5','Kebutuhan test, daily bonding test (specimen/hari) – D5'],
+['Daily bonding test, specimens (D5) – 0 = automatic from data','Daily bonding test, specimen (D5) – 0 = otomatis dari data'],['Time needed per specimen (minutes) – D6','Time needed per specimen (menit) – D6'],['Time needed per specimen, minutes (D6)','Time needed per specimen, menit (D6)'],
+['Total time needed for testing (minutes) – D7 = D5 × D6','Total time needed for testing (menit) – D7 = D5 × D6'],['Total working hour per machine per day (minutes) – D8','Total working hour per machine per day (menit) – D8'],['Working time per machine per day, minutes (D8)','Working time per machine per day, menit (D8)'],
+['Quantity of Tensile Machine = tester requirement – D10 = D7 ÷ D8','Quantity of Tensile Machine = kebutuhan tester – D10 = D7 ÷ D8'],['Bonding specimen output per machine per day (specimens) – D9 = D8 ÷ D6','Bonding specimen output per machine per day (specimen) – D9 = D8 ÷ D6'],
+['Building is added automatically from the Line No. prefix (example: F6-1A → Building F6).','Gedung bertambah otomatis dari awalan Line No. (contoh: F6-1A → Building F6).'],
+['Assessment','Penilaian'],['How to read:','Cara baca:'],
+['No tester data yet. Select the Tester name when entering data.','Belum ada data bertester. Pilih nama Tester saat input data.'],
+['No data in the date range','Belum ada data pada rentang tanggal'],
+['Tester Master Data is still empty – add active testers so tester requirements can be calculated.','Master Data Tester masih kosong – tambahkan tester aktif agar kebutuhan tester dapat dihitung.'],
+['Data cannot be loaded yet (SQL function dash_tester_sizecat is not available in Supabase).','Data belum bisa dimuat (fungsi SQL dash_tester_sizecat belum tersedia di Supabase).'],
+['This chart needs the SQL function dash_tester_overview. Run revisi_ocpt_tester_pool.sql in Supabase.','Grafik ini butuh fungsi SQL dash_tester_overview. Jalankan revisi_ocpt_tester_pool.sql di Supabase.'],
+['The master_testers table has not been created. Run revisi_dashboard_v2.sql in Supabase.','Tabel master_testers belum dibuat. Jalankan revisi_dashboard_v2.sql di Supabase.'],
+['Your account may not have UPDATE permission in Supabase (see the table policy).','Akun Anda kemungkinan belum punya izin UPDATE di Supabase (lihat policy tabel).','Tidak ada data yang berubah. Akun Anda kemungkinan belum punya izin UPDATE di Supabase (lihat policy tabel).'],
+/* master & input */
+['⟳ Fill from Material Testing Data','⟳ Isi dari Data Material Testing'],['Material Master is filled automatically from the Material Testing data that has been uploaded (name, type, colour). Click the button above after a new upload.','Master Material diisi otomatis dari data Material Testing yang sudah diupload (nama, tipe, warna). Klik tombol di atas setelah ada upload baru.'],
+['Reading Material Testing data...','Membaca data Material Testing...'],['Material Master already matches the Material Testing data ✔','Master Material sudah sesuai dengan data Material Testing ✔'],['Data saved ✔','Data tersimpan ✔'],
+['UK Size is filled with numbers only. For children’s sizes (e.g. 10K) enter 10 and choose the matching Size Category.','UK Size diisi angka saja. Untuk ukuran anak (mis. 10K) isi 10 dan pilih Size Category yang sesuai.'],
+['Example: 2.5, 1.3 (separate with commas, use a dot for decimals)','Contoh: 2.5, 1.3 (pisahkan dengan koma, desimal pakai titik)'],['Invalid choice','Pilihan tidak valid'],['Choose one of the values from the dropdown.','Pilih salah satu nilai dari dropdown.'],
+['🗑 Delete Same Names','🗑 Hapus Nama Sama'],['Delete Testers with the Same Name','Hapus Tester dengan Nama Sama'],['Kept (Tester ID · created)','Dipertahankan (Tester ID · dibuat)'],['Deleted (Tester ID · created)','Dihapus (Tester ID · dibuat)'],['Found','Ditemukan'],
+['QUALITY & COMPLIANCE DASHBOARD','DASHBOARD MUTU & KEPATUHAN'],['Material Quality for Better Performance','Kualitas Material untuk Kinerja Lebih Baik'],
+['Result Overview','Ikhtisar Hasil'],['Result by Material Type','Hasil per Material Type'],['Test Result Trend','Tren Hasil Test'],['Reason Failure (by count)','Alasan Gagal (berdasarkan jumlah)'],['Failure by Reason','Kegagalan per Alasan'],
+['Top 5 Suppliers by Fail Rate','5 Supplier Teratas berdasarkan Fail Rate'],['Material Test Performance – Top 5 Articles','Kinerja Material Test – 5 Article Teratas'],['Material Test Performance – Top 5 Article','Kinerja Material Test – 5 Article Teratas'],
+['FGT Result','Hasil FGT'],['Result by Category','Hasil per Kategori'],['FGT & CT Trend','Tren FGT & CT'],['Top 5 Models by Pass Rate','5 Model Teratas berdasarkan Pass Rate'],['Top 5 Models by Fail Rate','5 Model Teratas berdasarkan Fail Rate'],
+['Order by Country (Top 10)','Order per Negara (10 Teratas)'],['FGT / CT Volume by Factory','Volume FGT / CT per Factory'],['TOTAL RECORDS TEST OCPT','TOTAL DATA TEST OCPT'],['OCPT Result','Hasil OCPT'],['OCPT by Line','OCPT per Line'],
+['Result by Test Level','Hasil per Test Level'],['Category & Intended Use (Top 5)','Kategori & Peruntukan (5 Teratas)'],['Test Performance by Destination','Kinerja Test per Destination'],
+['Gender Distribution','Distribusi Gender'],['Age Distribution','Distribusi Usia'],['Foot Size Distribution (Right)','Distribusi Ukuran Kaki (Kanan)'],['Foot Shape Distribution per Size Category','Distribusi Bentuk Kaki per Size Category'],
+['Foot Shape Distribution','Distribusi Bentuk Kaki'],['Distribution By Depart','Distribusi per Departemen'],['Tester Pool Trend','Tren Tester Pool'],['Top 5 Rejected Reason & Area','5 Alasan & Area Reject Teratas'],
+['Areas of Reject (cm²):','Area Reject (cm²):'],['Top Articles & POs by Rejects','Article & PO Teratas berdasarkan Reject'],['Quality Rate per Line – Bonding','Tingkat Mutu per Line – Bonding'],['Quality Rate per Line – Stockfitting','Tingkat Mutu per Line – Stockfitting'],
+['Summary Test Result','Ringkasan Hasil Test'],['Report Result Testing','Laporan Hasil Pengujian'],['By Dept','Per Departemen'],['Tester Activities','Aktivitas Tester'],['Foot Width','Lebar Kaki'],['Avg Foot Length','Rata-rata Panjang Kaki'],['AVG HEIGHT (CM)','RATA-RATA TINGGI (CM)'],['AVG WEIGHT (KG)','RATA-RATA BERAT (KG)'],
+['TESTER PROFILE','PROFIL TESTER'],['FOOT MEASUREMENT','PENGUKURAN KAKI'],['RIGHT FOOT','KAKI KANAN'],['LEFT FOOT','KAKI KIRI'],['TESTER GENDER','GENDER TESTER'],
+['Laboratory Staff','Staf Laboratorium'],['Yes','Ya'],['Master Data','Master Data'],['Input Data','Input Data'],
+];
+/* Kalimat dinamis (sumber Bahasa Indonesia) -> Inggris. Dipakai untuk teks UI non-tabel dan pesan alert/confirm. */
+const RX=[
+[/Import (\d+) baris baru ke (.+?) \((\d+) sheet dibaca\)\?/g,'Import $1 new rows into $2 ($3 sheets read)?'],
+[/Import (\d+) baris ke (.+?) \((\d+) sheet dibaca\):/g,'Import $1 rows into $2 ($3 sheets read):'],
+[/(\d+) baris akan DIUPDATE \(data lama diperbarui, bukan baris baru\)/g,'$1 rows will be UPDATED (existing data is updated, not added as new rows)'],
+[/(\d+) baris BARU \(belum ada di sistem\)/g,'$1 NEW rows (not yet in the system)'],
+[/(\d+) baris tidak berubah \(dilewati\)/g,'$1 rows unchanged (skipped)'],
+[/(\d+) baris DILEWATI karena kombinasi Lab Test No\. \+ Material Type \+ Material Name kembar \(harus unik\):/g,'$1 rows SKIPPED because the Lab Test No. + Material Type + Material Name combination is duplicated (must be unique):'],
+[/Perbaiki di Excel \(Lab Test No\., Material Type, atau Material Name\) lalu import ulang\./g,'Fix it in Excel (Lab Test No., Material Type, or Material Name), then import again.'],
+[/Semua baris yang valid sudah sama dengan data di sistem\./g,'All valid rows are already identical to the data in the system.'],
+[/Tidak ada yang diupdate dan tidak ada baris baru\./g,'Nothing was updated and no new rows were added.'],
+[/Kolom yang berubah:/g,'Changed columns:'],[/Kolom tidak dikenali \(diabaikan\):/g,'Unrecognized columns (ignored):'],[/Lanjutkan\?/g,'Continue?'],
+[/Import selesai ✔/g,'Import complete ✔'],[/Selesai dengan sebagian gagal\./g,'Completed with some failures.'],
+[/(\d+) baris DIUPDATE/g,'$1 rows UPDATED'],[/(\d+) baris BARU ditambahkan/g,'$1 NEW rows added'],[/(\d+) baris tidak berubah/g,'$1 rows unchanged'],
+[/ \(dari (\d+)\)/g,' (of $1)'],[/ baris([ \n]|$)/g,' rows$1'],
+[/Gagal \(maks 10 ditampilkan\):/g,'Failed (max 10 shown):'],[/Gagal memeriksa data yang sudah ada:/g,'Failed to check existing data:'],
+[/Memeriksa data yang sudah ada\.\.\./g,'Checking existing data...'],[/Mengupdate (\d+) \/ (\d+)\.\.\./g,'Updating $1 / $2...'],[/Menambah baris baru (\d+) \/ (\d+)\.\.\./g,'Adding new rows $1 / $2...'],[/Mengimpor (\d+) \/ (\d+)\.\.\./g,'Importing $1 / $2...'],[/Menghapus (\d+) \/ (\d+)\.\.\./g,'Deleting $1 / $2...'],
+[/Baris baru ke-(\d+)/g,'New row #$1'],[/Baris data ke-(\d+)/g,'Data row #$1'],[/Update ID (\d+): tidak ada baris yang berubah \(kemungkinan tidak punya izin update\)/g,'Update ID $1: no rows changed (you may not have update permission)'],
+[/Tidak ada baris yang cocok\. Gunakan header dari Template Excel\./g,'No matching rows. Use the headers from the Excel Template.'],
+[/(\d+) baris dilewati karena kode Line No\. tidak sesuai modul/g,'$1 rows skipped because the Line No. code does not match the module'],[/Stockfitting hanya menerima line Stock-\.\.\./g,'Stockfitting only accepts Stock-... lines'],[/Bonding tidak menerima line Stock-\.\.\./g,'Bonding does not accept Stock-... lines'],
+[/Semua (\d+) baris sudah ada di sistem, tidak ada yang diimpor\./g,'All $1 rows already exist in the system; nothing was imported.'],
+[/Hasil per procedure diperbarui pada (\d+) baris( yang sudah ada)?\./g,'Per-procedure results updated on $1$2 rows.'],
+[/Berhasil: (\d+) dari (\d+) baris baru\./g,'Succeeded: $1 of $2 new rows.'],[/(\d+) baris sama dilewati\./g,'$1 identical rows skipped.'],[/\((\d+) baris yang sama sudah ada dan dilewati\)/g,'($1 identical rows already exist and were skipped)'],
+[/Terhapus (\d+) dari (\d+)/g,'Deleted $1 of $2'],[/\(kemungkinan akun tidak punya izin delete di Supabase\)\./g,'(your account may not have delete permission in Supabase).'],
+[/Hapus data ini\?/g,'Delete this data?'],[/Hapus tester ini\?/g,'Delete this tester?'],[/Hapus (\d+) data tester duplikat\? Tindakan ini tidak bisa dibatalkan\./g,'Delete $1 duplicate tester records? This action cannot be undone.'],
+[/(\d+) data duplikat berhasil dihapus\./g,'$1 duplicate records deleted successfully.'],[/Tidak ada tester dengan nama yang sama\./g,'No testers with the same name.'],
+[/Ditemukan <?b?>?(\d+)/g,'Found $1'],[/^nama ganda\. Data yang dihapus:$/,'duplicate names. Records to delete:'],[/^baris\. Yang dipertahankan per nama adalah data dengan isian paling lengkap \(jika sama, yang paling lama dibuat\)\.$/,'rows. For each name, the record with the most complete data is kept (if equal, the oldest).'],
+[/Isi tanggal Lab Out dulu\./g,'Please fill in the Lab Out date first.'],[/Tidak ada data pada rentang ini/g,'No data in this range'],
+[/File gambar tidak valid\./g,'Invalid image file.'],[/Foto tidak dapat disimpan di browser ini\./g,'The photo cannot be saved in this browser.'],[/Dibatalkan: kata konfirmasi tidak sesuai\./g,'Cancelled: the confirmation word does not match.'],
+[/Library ExcelJS gagal dimuat, file dibuat tanpa dropdown\./g,'The ExcelJS library failed to load; the file was created without dropdowns.'],[/Data ini sudah pernah diinput, tidak disimpan lagi\./g,'This data has already been entered and was not saved again.'],
+[/^Menampilkan (\d+) baris pertama\.$/,'Showing the first $1 rows.'],[/^dari (\d+)$/,'of $1'],
+[/^(\d+) data( · menampilkan (\d+)–(\d+))? \(Excel berisi semua data\)$/,(m,n,_x,a,b)=>n+' records'+(a?' · showing '+a+'–'+b:'')+' (Excel contains all data)'],
+[/^🗑 Hapus Terpilih \((\d+)\)$/,'🗑 Delete Selected ($1)'],[/^🗑 Hapus Semua Data Tampil \((\d+)\)$/,'🗑 Delete All Displayed Data ($1)'],
+[/^(\d+) data complete belum memiliki nama tester\.$/,'$1 completed records do not have a tester name yet.'],[/^% data complete belum memiliki nama tester\.$/,'% of completed records do not have a tester name yet.'],
+[/ data belum memiliki Lab Out Date \(semua tanggal Lab In\)\./g,' records do not have a Lab Out Date yet (all use Lab In dates).'],
+[/Angka di atas titik = nilai pada tanggal tersebut\./g,'The number above each point = the value on that date.'],
+[/Sumbu X:/g,'X axis:'],[/Sumbu Y:/g,'Y axis:'],[/Jumlah kasus \(klik untuk detail\)/g,'Number of cases (click for details)'],[/Jumlah test \(klik untuk detail\)/g,'Number of tests (click for details)'],[/Jumlah record/g,'Number of records'],
+[/X axis: bulan/g,'X axis: month'],[/angka di atas batang = nilai %/g,'number above each bar = % value'],[/minggu ke- \(ISO, Senin–Minggu\)/g,'week no. (ISO, Monday–Sunday)'],[/tahun sesuai pilihan di judul grafik/g,'year as selected in the chart title'],[/ Total test;/g,' Total tests;'],
+[/Rumus: kebutuhan/g,'Formula: requirement'],[/Target bulan = kapasitas/g,'Monthly target = capacity'],[/hari kerja berjalan/g,'elapsed working days'],[/\/hari × utilisasi/g,'/day × utilization'],
+];
+const toEN=new Map(),toID=new Map();
+const norm=s=>s.replace(/\s+/g,' ').trim().toLowerCase();
+P.forEach(([en,id,...al])=>{ // sumber ID -> EN ; sumber EN/alias -> ID
+  if(norm(id)!==norm(en)){toEN.set(norm(id),en);toID.set(norm(en),id)}
+  al.forEach(a=>{if(norm(a)!==norm(en))toEN.set(norm(a),en);if(norm(a)!==norm(id))toID.set(norm(a),id)});
+});
+const isUP=s=>/[A-Za-z]/.test(s)&&s===s.toUpperCase();
+function tr(s,strict){ // strict = hanya cocok persis (sel tabel berisi data pengguna)
+  if(typeof s!=='string'||!/[A-Za-z]/.test(s))return s;
+  const k=norm(s),m=(LANG==='en'?toEN:toID).get(k);
+  if(m!==undefined)return isUP(s.trim())&&s.trim().length>3?m.toUpperCase():m;
+  if(LANG!=='en'||strict)return s;
+  let o=s;
+  for(const [r,t] of RX){if(!r.test(o)){r.lastIndex=0;continue}r.lastIndex=0;o=o.replace(r,t)}
+  return o;
+}
+const LD=n=>n.nodeType===3?(n.parentElement||{}):n;
+const cache=new WeakMap();
+function doText(n){
+  const p=n.parentElement;if(!p)return;const t=p.tagName;
+  if(t==='SCRIPT'||t==='STYLE'||t==='TEXTAREA'||t==='CODE')return;
+  if(t==='OPTION'&&!p.hasAttribute('value'))return;            // nilai pilihan = teks -> jangan diubah
+  if(p.closest&&p.closest('#langsw'))return;
+  const v=n.data;if(cache.get(n)===LANG+'|'+v)return;
+  const lead=v.match(/^\s*/)[0],trail=v.match(/\s*$/)[0],core=v.trim(),o=tr(core,t==='TD');
+  const out=o===core?v:lead+o+trail;
+  if(out!==v){n.data=out}
+  cache.set(n,LANG+'|'+n.data);
+}
+const ATTR=['placeholder','title','aria-label'];
+function doEl(e){ATTR.forEach(a=>{if(e.hasAttribute&&e.hasAttribute(a)){const v=e.getAttribute(a),o=tr(v,e.tagName==='TD');if(o!==v)e.setAttribute(a,o)}})}
+function walk(root){
+  if(!root)return;
+  if(root.nodeType===3){doText(root);return}
+  if(root.nodeType!==1&&root.nodeType!==9&&root.nodeType!==11)return;
+  if(root.nodeType===1)doEl(root);
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);let n;
+  while((n=w.nextNode())){n.nodeType===3?doText(n):doEl(n)}
+}
+let busy=false;
+const mo=new MutationObserver(ms=>{if(busy)return;busy=true;
+  try{for(const m of ms){
+    if(m.type==='childList')m.addedNodes.forEach(walk);
+    else if(m.type==='characterData')doText(m.target);
+    else if(m.type==='attributes')doEl(m.target)}}finally{busy=false}
+  mo.takeRecords()});
+function start(){mo.observe(document.documentElement,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:ATTR});walk(document.body)}
+/* alert / confirm / prompt */
+['alert','confirm','prompt'].forEach(f=>{const o=window[f].bind(window);window[f]=(m,...r)=>o(tr(String(m==null?'':m)),...r)});
+/* pilihan bahasa */
+const css=document.createElement('style');
+css.textContent='#langsw{position:fixed;right:14px;bottom:14px;z-index:99999;display:flex;border-radius:999px;overflow:hidden;box-shadow:0 4px 14px #0f1c3a40;border:1px solid #e9c46a;background:#fff;font:600 12px system-ui,sans-serif}#langsw button{border:0;background:transparent;padding:7px 12px;cursor:pointer;color:#1b2f6b}#langsw button.on{background:linear-gradient(90deg,#1b2f6b,#1d4ed8);color:#fff}';
+document.head.appendChild(css);
+const sw=document.createElement('div');sw.id='langsw';sw.setAttribute('translate','no');
+sw.innerHTML='<button type="button" data-l="id" title="Bahasa Indonesia">🇮🇩 ID</button><button type="button" data-l="en" title="English">🇬🇧 EN</button>';
+function mark(){document.documentElement.lang=LANG;sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.l===LANG))}
+sw.onclick=e=>{const b=e.target.closest('button');if(!b||b.dataset.l===LANG)return;
+  LANG=b.dataset.l;try{localStorage.setItem(LS,LANG)}catch(x){}mark();
+  try{if(typeof render==='function')render()}catch(x){console.error(x)}
+  walk(document.body);setTimeout(()=>walk(document.body),400)};
+window.i18n={t:s=>tr(String(s)),get lang(){return LANG}};
+document.body.appendChild(sw);mark();start();
+})();
+</script>
+<script>
 const LOGO='data:image/jpeg;base64,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';
 try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}
 const sb=supabase.createClient('https://bdjmcfvjwtsnomufypdv.supabase.co','sb_publishable_uctUGRHP5ol0Shs9DsGtAg_w5J0Me_L',(()=>{try{sessionStorage.setItem('_t','1');sessionStorage.removeItem('_t');return{auth:{storage:window.sessionStorage,persistSession:true,autoRefreshToken:true}}}catch(e){return{auth:{persistSession:false}}}})());
