@@ -700,27 +700,36 @@ const mnorm=v=>v==null?'':String(v).trim().toLowerCase().replace(/\s+/g,' '),
  MSC=['article','supplier_name','colour','material_name','material_type','material_description'],
  mid=r=>MID.map(k=>mval(k,r[k])).join('|');
 function mplan(rows,ex){
-  const byLab={},byId={},used=new Set(),pairs=[],left=[],ins=[],upd=[];let same=0;
-  ex.forEach(e=>{const l=mlab(e.lab_test_no);if(l)(byLab[l]=byLab[l]||[]).push(e);const i=mid(e);(byId[i]=byId[i]||[]).push(e)});
-  const sc=(r,e)=>MSC.reduce((s,k)=>s+(mval(k,r[k])===mval(k,e[k])?1:0),0);
-  // 1) cocokkan lewat Lab Test No. (jika kembar, pilih yang paling mirip)
-  rows.forEach(r=>{const l=mlab(r.lab_test_no);let best=null,bs=-1;
-    if(l)(byLab[l]||[]).forEach(e=>{if(used.has(e.id))return;const s=sc(r,e);if(s>bs){bs=s;best=e}});
-    if(best){used.add(best.id);pairs.push([r,best])}else left.push(r)});
-  // 2) sisanya (Lab Test No. kosong / berubah): cocokkan lewat identitas material + tanggal Lab In
-  left.forEach(r=>{const e=(byId[mid(r)]||[]).find(e=>!used.has(e.id));if(e){used.add(e.id);pairs.push([r,e])}else ins.push(r)});
-  pairs.forEach(([r,e])=>{const p={};Object.keys(r).forEach(k=>{if(mval(k,r[k])!==mval(k,e[k]))p[k]=r[k]});Object.keys(p).length?upd.push({id:e.id,p}):same++});
-  return {upd,ins,same}
+  // Kunci baris = Lab Test No. + Material Type + Material Name (Lab Test No. boleh sama jika type/name berbeda)
+  const lk=r=>mlab(r.lab_test_no)+'|'+mval('material_type',r.material_type)+'|'+mval('material_name',r.material_name),
+   byLab={},byK={},byId={},used=new Set(),pairs=[],left=[],ins=[],upd=[],cf=[],fk=new Set(rows.map(lk));let same=0;
+  ex.forEach(e=>{const l=mlab(e.lab_test_no);if(l){(byK[lk(e)]=byK[lk(e)]||[]).push(e);(byLab[l]=byLab[l]||[]).push(e)}const i=mid(e);(byId[i]=byId[i]||[]).push(e)});
+  const sc=(r,e)=>MSC.reduce((s,k)=>s+(mval(k,r[k])===mval(k,e[k])?1:0),0),
+   best=(r,c)=>{let b=null,bs=-1;c.forEach(e=>{if(used.has(e.id))return;const s=sc(r,e);if(s>bs){bs=s;b=e}});return b};
+  // 1) Lab Test No. + Type + Name sama persis
+  rows.forEach(r=>{const l=mlab(r.lab_test_no),e=l?best(r,byK[lk(r)]||[]):null;if(e){used.add(e.id);pairs.push([r,e])}else left.push(r)});
+  // 2) Lab Test No. sama tapi Type/Name diedit di Excel: hanya baris lama yang type|name-nya tidak dipakai baris Excel lain
+  const left2=[];
+  left.forEach(r=>{const l=mlab(r.lab_test_no),e=l?best(r,(byLab[l]||[]).filter(x=>!fk.has(lk(x)))):null;if(e){used.add(e.id);pairs.push([r,e])}else left2.push(r)});
+  // 3) Lab Test No. kosong / berubah: cocokkan lewat identitas material + tanggal Lab In
+  left2.forEach(r=>{const e=(byId[mid(r)]||[]).find(e=>!used.has(e.id));if(e){used.add(e.id);pairs.push([r,e])}else ins.push(r)});
+  // cek bentrok kunci unik
+  const lu=new Map();ex.forEach(e=>{if(mlab(e.lab_test_no))lu.set(lk(e),e.id)});pairs.forEach(([r,e])=>{lu.set(lk(e),'x'+e.id)});lu.clear();ex.forEach(e=>{if(mlab(e.lab_test_no))lu.set(lk(e),e.id)});
+  const ok=[];ins.forEach(r=>{const l=mlab(r.lab_test_no),k=lk(r);if(l&&lu.has(k))cf.push(r);else{if(l)lu.set(k,'new');ok.push(r)}});
+  pairs.forEach(([r,e])=>{const p={};Object.keys(r).forEach(k=>{if(mval(k,r[k])!==mval(k,e[k]))p[k]=r[k]});
+    if(('lab_test_no' in p)||('material_type' in p)||('material_name' in p)){const n=Object.assign({},e,p),k=lk(n),o=lu.get(k);if(mlab(n.lab_test_no)&&o!=null&&o!==e.id){cf.push(r);return}lu.set(k,e.id)}
+    Object.keys(p).length?upd.push({id:e.id,p}):same++});
+  return {upd,ins:ok,same,cf}
 }
 async function impMat(el,rows,wb,bad){
   const m=MOD.mat,ex=[];
   for(let a=0;;a+=1000){$('#cnt').textContent='Memeriksa data yang sudah ada... '+a;const {data,error}=await sb.from(m.t).select('*').order('id').range(a,a+999);if(error){el.value='';$('#cnt').textContent='';return alert('Gagal memeriksa data yang sudah ada: '+error.message)}ex.push(...data);if(data.length<1000)break}
   $('#cnt').textContent='';
-  const {upd,ins,same}=mplan(rows,ex);
-  if(!upd.length&&!ins.length){el.value='';return alert('Semua '+rows.length+' baris sudah sama dengan data di sistem.\nTidak ada yang diupdate dan tidak ada baris baru.')}
+  const {upd,ins,same,cf}=mplan(rows,ex),cft=cf.length?'\n\n⚠ '+cf.length+' baris DILEWATI karena kombinasi Lab Test No. + Material Type + Material Name kembar (harus unik):\n'+cf.slice(0,10).map(r=>'  • '+r.lab_test_no+' ('+(r.material_name||r.article||'-')+')').join('\n')+(cf.length>10?'\n  ... dan '+(cf.length-10)+' lainnya':'')+'\nPerbaiki di Excel (Lab Test No., Material Type, atau Material Name) lalu import ulang.':'';
+  if(!upd.length&&!ins.length){el.value='';return alert('Semua baris yang valid sudah sama dengan data di sistem.\nTidak ada yang diupdate dan tidak ada baris baru.'+cft)}
   const ch={},lbl=k=>(m.f.find(f=>f[0]===k)||[0,k])[1];upd.forEach(u=>Object.keys(u.p).forEach(k=>ch[k]=(ch[k]||0)+1));
   const chs=Object.entries(ch).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,n])=>'  • '+lbl(k)+': '+n+' baris').join('\n');
-  if(!confirm('Import '+rows.length+' baris ke '+m.n+' ('+wb.SheetNames.length+' sheet dibaca):\n\n• '+upd.length+' baris akan DIUPDATE (data lama diperbarui, bukan baris baru)\n• '+ins.length+' baris BARU (belum ada di sistem)\n• '+same+' baris tidak berubah (dilewati)'+(chs?'\n\nKolom yang berubah:\n'+chs:'')+(bad.length?'\n\nKolom tidak dikenali (diabaikan):\n'+bad.join(', '):'')+'\n\nLanjutkan?'))return el.value='';
+  if(!confirm('Import '+rows.length+' baris ke '+m.n+' ('+wb.SheetNames.length+' sheet dibaca):\n\n• '+upd.length+' baris akan DIUPDATE (data lama diperbarui, bukan baris baru)\n• '+ins.length+' baris BARU (belum ada di sistem)\n• '+same+' baris tidak berubah (dilewati)'+cft+(chs?'\n\nKolom yang berubah:\n'+chs:'')+(bad.length?'\n\nKolom tidak dikenali (diabaikan):\n'+bad.join(', '):'')+'\n\nLanjutkan?'))return el.value='';
   let uok=0,iok=0;const errs=[],S=500,C=10;
   for(let i=0;i<upd.length;i+=C){
     $('#cnt').textContent='Mengupdate '+Math.min(i+C,upd.length)+' / '+upd.length+'...';
@@ -735,7 +744,7 @@ async function impMat(el,rows,wb,bad){
     for(let j=0;j<c.length;j++){const {error:e2}=await sb.from(m.t).insert(c[j]);if(e2){if(errs.length<10)errs.push('Baris baru ke-'+(i+j+1)+': '+e2.message)}else iok++}}
   el.value='';
   const fail=(upd.length-uok)+(ins.length-iok);
-  alert((fail?'Selesai dengan sebagian gagal.':'Import selesai ✔')+'\n\n• '+uok+' baris DIUPDATE'+(uok<upd.length?' (dari '+upd.length+')':'')+'\n• '+iok+' baris BARU ditambahkan'+(iok<ins.length?' (dari '+ins.length+')':'')+'\n• '+same+' baris tidak berubah'+(errs.length?'\n\nGagal (maks 10 ditampilkan):\n'+errs.join('\n'):''));
+  alert((fail?'Selesai dengan sebagian gagal.':'Import selesai ✔')+'\n\n• '+uok+' baris DIUPDATE'+(uok<upd.length?' (dari '+upd.length+')':'')+'\n• '+iok+' baris BARU ditambahkan'+(iok<ins.length?' (dari '+ins.length+')':'')+'\n• '+same+' baris tidak berubah'+cft+(errs.length?'\n\nGagal (maks 10 ditampilkan):\n'+errs.join('\n'):''));
   list();
 }
 async function imp(el){if(RO())return;
