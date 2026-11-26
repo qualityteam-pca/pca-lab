@@ -111,6 +111,7 @@ aside img{border:3px solid var(--gold)}
 .tabs .btn.on,.btn{background:linear-gradient(90deg,#1b2f6b,#1d4ed8)}.btn.o,.btn.d{background:#fff}.btn.d{background:#dc2626}.btn.o{color:var(--n)}
 .lgc:before{height:9px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='9' viewBox='0 0 18 9'%3E%3Cpath d='M9 0l9 4.5L9 9 0 4.5z' fill='%23c8932b'/%3E%3Cpath d='M9 2.5l5 2-5 2-5-2z' fill='%231b2f6b'/%3E%3C/svg%3E") repeat-x}
 .qsc{scrollbar-width:thin;scrollbar-color:#c8932b #eef3fb}.qsc::-webkit-scrollbar{height:10px}.qsc::-webkit-scrollbar-track{background:#eef3fb;border-radius:6px}.qsc::-webkit-scrollbar-thumb{background:#c8932b;border-radius:6px}
+.fss{width:auto!important;font-weight:700;font-size:15px;padding:8px 14px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f1c3a}.fsb2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}.fsg1{display:grid;gap:12px}@media(max-width:1100px){.fsb2{grid-template-columns:1fr}}
 .pr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:500px){.pr2{grid-template-columns:1fr}}
 .fsg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}.fsc{background:#fff;border-radius:10px;padding:10px 12px;box-shadow:0 4px 12px #0f1c3a14;min-width:0}.fsc h3{font-size:12px}.fsc table{font-size:11px}
 </style></head><body>
@@ -323,6 +324,7 @@ const TSO={mat:[],bond:[],stock:[]};
 const T=(n,l,r)=>[n,l,'text',0,r],D=(n,l,r)=>[n,l,'date',0,r],N=(n,l,r)=>[n,l,'number',0,r],S=(n,l,o,r)=>[n,l,'select',o,r];
 const BF=(o,ln)=>[S('scope','Data Type',['Eksternal','Internal'],1),D('test_date','Date',1),S('line_no','Line No.',ln||LN,1),T('lab_no','Lab No.'),T('po_no','PO No.'),T('article_no','Article No.',1),T('model_name','Model Name'),S('age_grouping','Age Grouping',['Men','Women','Kids','Adult']),T('size_no','Size'),T('adhesive_supplier','Main Adhesive Supplier'),N('avg_val','Average'),N('max_val','Max'),N('min_val','Min'),T('reject_intervals','Reject Intervals in 1 Specimen'),T('reject_area','Areas of Reject'),S('reject_reason','Reject Reason',RR),S('result','Result',RS,1),S('tester','Tester',o)];
 const X=(g,s,hid,fo)=>{const a=Object.assign([0,0,'text',0,0,0,0,0],s);a[6]=g;if(hid)a[5]=1;if(fo)a[7]=1;return a};
+const FSN={r:'Narrow Foot',n:'Normal Foot',w:'Wide Foot',narrow:'Narrow Foot',normal:'Normal Foot',wide:'Wide Foot'};
 const XP=s=>{const a=X('P',s);a[8]=1;return a};
 const MOD={
 kal:{t:'calibration_records',n:'Kalibrasi',d:r=>r.cal_date||r.created_at.slice(0,10),f:[T('item_machine','Item Machine',1),N('qty','Qty'),T('brand','Brand'),T('manufacture','Manufacture'),T('code_machine','Code of Machine'),T('series_no','Series No'),S('item_type','Type (Tool / Machine)',['Tool','Machine']),T('pic','PIC'),T('no_inventaris','No Inventaris'),T('no_wi','No WI'),T('verification','Verification'),S('cal_freq','Calibration Frequency',['Internal','External']),T('third_party','3rd Party (Calibration By)'),D('cal_date','Calibration Date',1),T('cal_result','Calibration Result'),['maintenance','Maintenance','check',['Daily','Weekly','Monthly','Quarterly','Yearly']],S('notes','Notes',['Good Condition','Broken']),T('modification','Modification'),['remarks','Remarks','textarea']]},
@@ -525,11 +527,12 @@ async function fsq(){
 }
 async function dqc(){
   const nul=Promise.resolve(null),g=(k,f)=>sb.rpc('dash_panel',{k,d1:DS.d1,d2:DS.d2,f}).then(r=>r.data||{main:{},opts:[]});
-  let [a,b,c,d,r1,r2,r3,r4,gx,tn,xm,xf]=await Promise.all([K==='mat'?g('mat',DQ.mat):nul,K==='fgt'?g('fgt',DQ.fgt):nul,K==='ocpt'?g('ocpt',{}):nul,
+  let [a,b,c,d,r1,r2,r3,r4,gx,tn,xm,xf,fz]=await Promise.all([K==='mat'?g('mat',DQ.mat):nul,K==='fgt'?g('fgt',DQ.fgt):nul,K==='ocpt'?g('ocpt',{}):nul,
     K==='ocpt'?sb.rpc('dash_tester',{d1:DS.d1,d2:DS.d2,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.data||{}):nul,
     K==='mat'?RC('mat'):nul,K==='fgt'?RC('fgt'):nul,K==='ocpt'?RC('ocpt'):nul,K==='ocpt'?RC('tester'):nul,
     K==='ocpt'?sb.rpc('dash_tester_sizecat',{d1:DS.d1||null,d2:DS.d2||null,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.error?null:r.data):nul,
-    K==='ocpt'?sb.rpc('dash_tester_overview',{d1:DS.d1||null,d2:DS.d2||null,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.error?null:r.data):nul,K==='mat'?sb.rpc('dash_extra',{k:'mat',d1:DS.d1,d2:DS.d2,f:DQ.mat}).then(r=>r.data||{}):nul,K==='fgt'?sb.rpc('dash_extra',{k:'fgt',d1:DS.d1,d2:DS.d2,f:DQ.fgt}).then(r=>r.data||{}):nul]);
+    K==='ocpt'?sb.rpc('dash_tester_overview',{d1:DS.d1||null,d2:DS.d2||null,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null}).then(r=>r.error?null:r.data):nul,K==='mat'?sb.rpc('dash_extra',{k:'mat',d1:DS.d1,d2:DS.d2,f:DQ.mat}).then(r=>r.data||{}):nul,K==='fgt'?sb.rpc('dash_extra',{k:'fgt',d1:DS.d1,d2:DS.d2,f:DQ.fgt}).then(r=>r.data||{}):nul,
+    K==='ocpt'?Promise.all(['yes','no'].map(m=>sb.rpc('dash_tester_sizecat2',{d1:DS.d1||null,d2:DS.d2||null,p_dept:DQ.t.dept||null,p_name:DQ.t.name||null,p_tid:DQ.t.tid||null,p_mode:m}))).then(([y,n])=>y.error||n.error?null:{yes:y.data,no:n.data}):nul]);
   const [MX,FX,OX,FSH]=await Promise.all([K==='mat'?CR('material_tests','id,supplier_name,article,material_name,material_type,result,failure_part_testing,failure_standard,failure_test_result','lab_in_date',DQ.mat):[],K==='fgt'?CR('fgt_records','id,lab_in,fgt_result,country','lab_in',DQ.fgt):[],K==='ocpt'?CR('ocpt_records','id,received_date,result,test_level,destination,model_name,category_intended_use,line','received_date',{}):[],null]);
   const E={main:{},opts:[]};a=a||E;b=b||E;c=c||E;d=d||{};const SZ=gx;gx=gx||{};
   if(K==='mat'&&a.main){try{let q=sb.from('material_tests').select('id',{count:'exact',head:true}).eq('result','On Progress');if(DS.d1)q=q.gte('lab_in_date',DS.d1);if(DS.d2)q=q.lte('lab_in_date',DS.d2);Object.entries(DQ.mat).forEach(([c,v])=>{if(v)q=q.eq(c,v)});const r=await q;if(!r.error&&r.count!=null)a.main.pending=Math.max(+a.main.pending||0,r.count)}catch(e){}}
@@ -573,7 +576,7 @@ async function dqc(){
     <div class="sec">Tester Pool</div>${TK}<div class="pg"><div class="box fl">${(ses?fs('t','name','Name',to.name):'')+fs('t','dept','Dept',to.dept)+(ses?fs('t','tid','Tester ID',to.tid):'')}</div>
     <div><div class="two"><div class="box">${dnt('Gender Distribution',[{g:'Man',n:gm,c:'#2563eb'},{g:'Woman',n:gf,c:'#ec4899'}],{sub:'Total',size:220,k:['tester','_eq:gender']})}</div><div class="box"><h3>Age Distribution</h3>${tn?pcb(age,['tester','_age'])+cap('Rentang usia (tahun)','% tester'):NOTE}</div></div>
     <div class="two"><div class="box"><h3>Foot Size Distribution (Right)</h3>${tn?pcb(sz,['tester','_eq:brannock_r'])+cap('Brannock UK Size (kaki kanan)','% tester'):NOTE}</div><div class="box"><h3>Tester Activities</h3>${hbar(act,null,['tester','activities'])}</div></div>
-    ${FSC(SZ)}<div class="box"><h3>Distribution By Depart</h3>${hbar(dp,null,['tester','_eq:dept'])}</div>
+    ${FSC(fz)}<div class="box"><h3>Distribution By Depart</h3>${hbar(dp,null,['tester','_eq:dept'])}</div>
     <div class="box"><h3>Tester Pool Trend</h3>${lc([{n:'Tester Pool',c:'#10b981',k:['tester','_day:created_at'],d:tr}],'Jumlah tester baru per hari')}</div></div></div>
     ${ses?`<div class="box"><h3>Recent OCPT Data</h3>${rtb(r3,['received_date','line','sd_document','po_number','model_name','gender','fit_test_size','pairs','article_number','style_color','season','test_level','result'],'ocpt')}</div>`:''}
     ${ses?`<div class="box"><h3>Recent Tester Pool Data</h3>${rtb(r4,['name','dept','tester_id','gender','activities','footshape_slipon_yes','footshape_slipon_no','brannock_r','tiger_uk_r','brannock_l','tiger_uk_l','status'],'tester')}</div>`:''}`)};
@@ -586,13 +589,20 @@ const dnt=(title,items,o)=>{o=o||{};items=(items||[]).filter(x=>x.n>0);const tot
   const arcs=items.map((x,i)=>{const col=x.c||(items.length>PLT.length?`hsl(${Math.round(i*360/items.length)},65%,48%)`:PLT[i%PLT.length]),len=x.n*C/tot,s=`<circle r="${R}" cx="70" cy="70" fill="none" stroke="${col}" stroke-width="22" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-a}" transform="rotate(-90 70 70)" ${CKA(x,o)}><title>${esc(x.g)}: ${x.n} (${(x.n*100/tot).toFixed(1)}%)</title></circle>`;a+=len;return s}).join('');
   const lg=items.map((x,i)=>`<div ${CKA(x,o)} style="display:flex;gap:6px;align-items:center;font-size:13px;margin:3px 0"><b style="color:${x.c||(items.length>PLT.length?`hsl(${Math.round(i*360/items.length)},65%,48%)`:PLT[i%PLT.length])}">●</b><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(x.g)}">${esc(x.g)}</span><b>${x.n}</b><span style="color:#64748b;width:48px;text-align:right">${(x.n*100/tot).toFixed(1)}%</span></div>`).join('');
   return `<h3>${title}</h3><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><svg viewBox="0 0 140 140" width="${o.size||190}" height="${o.size||190}" style="flex:none">${arcs}<text x="70" y="68" text-anchor="middle" font-size="20" font-weight="700" fill="#0f1c3a">${o.center!=null?o.center:tot}</text><text x="70" y="84" text-anchor="middle" font-size="10" fill="#475569">${o.sub||'Total'}</text></svg><div style="flex:1;min-width:160px;max-height:${o.mh||'none'};overflow:auto">${lg}</div></div>`};
-const FSC=S=>{const H='<h3>Foot Shape Distribution per Size Category</h3>';
-  if(!S||!S.cats)return `<div class="box">${H}<small class="er">Data belum bisa dimuat (fungsi SQL dash_tester_sizecat belum tersedia di Supabase).</small></div>`;
-  const SC3={'Narrow Foot':'#06b6d4','Normal Foot':'#10b981','Wide Foot':'#f59e0b'},CC={Woman:'#ec4899',Man:'#2563eb',Infant:'#f59e0b',Children:'#10b981',Junior:'#a855f7',Kids:'#ef4444'},cs=S.cats;
-  const cards=cs.map(c=>{const it=[['Narrow Foot',c.narrow],['Normal Foot',c.normal],['Wide Foot',c.wide]].map(([g,n])=>({g,n,c:SC3[g],ck:['tester','_eq:size_category',c.c]})),un=c.total-c.narrow-c.normal-c.wide,
-    tb=c.sizes&&c.sizes.length?`<div class="wrap"><table><tr><th>UK Size</th><th>Narrow</th><th>Normal</th><th>Wide</th></tr>${c.sizes.map(s=>{const z=!(s.nr+s.nm+s.wd);return `<tr${s.x?' style="background:#fff7ed" title="Ukuran di luar rentang kategori ini"':z?' style="opacity:.45"':''}><td><b>${esc(s.u)}</b>${s.x?' ⚠':''}</td><td>${s.nr}</td><td>${s.nm}</td><td>${s.wd}</td></tr>`}).join('')}</table></div>`:'';
-    return `<div class="fsc" style="border-top:4px solid ${CC[c.c]}">${dnt(esc(c.c)+' ('+c.total+' tester)',it,{sub:'Foot shape',size:150})}${un>0&&c.total?`<small style="display:block;color:#475569">${un} tester belum diisi foot shape</small>`:''}${tb}</div>`}).join('');
-  return `<div class="box">${H}<div class="fsg">${cards}</div><small style="display:block;color:#475569;margin-top:8px">Size Category terbaca otomatis dari UK Size: Tiger 3D Scanner sebagai acuan utama (kanan, jika kosong kiri); jika Tiger kosong memakai Brannock. Rentang ukuran per kategori: Woman &amp; Man (dewasa) mulai 3.5 ke atas; Infant 4K–9.5K; Children 10K–2; Junior 2.5–6.5; Kids 10K–6.5. ⚠ = ukuran di luar rentang kategori. Desimal ditulis dengan titik.</small></div><div class="box">${dnt('Size Category Distribution',cs.map(c=>({g:c.c,n:c.total,c:CC[c.c],ck:['tester','_eq:size_category',c.c]})),{sub:'Total tester',size:200})}</div>`};
+let FZC=null;
+const FSU=()=>{const e=$('#fscb');if(e)e.outerHTML=FSB(FZC)};
+const FSCC={Woman:'#ec4899',Man:'#2563eb',Infant:'#f59e0b',Children:'#10b981',Junior:'#a855f7',Kids:'#ef4444'};
+const FSB=Z=>{const H='<h3 style="margin:0">Foot Shape Distribution per Size Category</h3>',md=DQ.fsm||'yes';
+  if(!Z||!Z.yes||!Z.no)return `<div class="box" id="fscb"><h3>Foot Shape Distribution per Size Category</h3><small class="er">Data belum bisa dimuat (fungsi SQL dash_tester_sizecat2 belum tersedia di Supabase).</small></div>`;
+  const SC3={'Narrow Foot':'#06b6d4','Normal Foot':'#10b981','Wide Foot':'#f59e0b'},
+  one=S=>(S.cats||[]).map(c=>{const it=[['Narrow Foot',c.narrow],['Normal Foot',c.normal],['Wide Foot',c.wide]].map(([g,n])=>({g,n,c:SC3[g],ck:['tester','_eq:size_category',c.c]})),un=c.total-c.narrow-c.normal-c.wide,
+    sm=['nr','nm','wd','op','ps','el'].map(k=>c.sizes.reduce((a,x)=>a+(+x[k]||0),0)),
+    tb=c.sizes&&c.sizes.length?`<div class="wrap"><table><tr><th>UK Size</th><th>Narrow</th><th>Normal</th><th>Wide</th><th>On Progress</th><th>Pass</th><th>Eliminated</th></tr>${c.sizes.map(x=>{const z=!(x.nr+x.nm+x.wd+x.op+x.ps+x.el);return `<tr${x.x?' style="background:#fff7ed" title="Ukuran di luar rentang kategori ini"':z?' style="opacity:.45"':''}><td><b>${esc(x.u)}</b>${x.x?' ⚠':''}</td><td>${x.nr}</td><td>${x.nm}</td><td>${x.wd}</td><td>${x.op}</td><td>${x.ps}</td><td>${x.el}</td></tr>`}).join('')}<tr style="background:#eef3fb;font-weight:700"><td>Total</td>${sm.map(v=>`<td>${v}</td>`).join('')}</tr></table></div>`:'';
+    return `<div class="fsc" style="border-top:4px solid ${FSCC[c.c]}">${dnt(esc(c.c)+' ('+c.total+' tester)',it,{sub:'Foot shape',size:150})}${un>0&&c.total?`<small style="display:block;color:#475569">${un} tester belum diisi foot shape</small>`:''}<div class="gn" style="margin:6px 0"><div style="color:#d97706"><b>${c.op}</b>On Progress</div><div style="color:#15803d"><b>${c.ps}</b>Pass</div><div style="color:#b91c1c"><b>${c.el}</b>Eliminated</div></div>${tb}</div>`}).join(''),
+  body=md==='both'?`<div class="fsb2"><div><div class="sec" style="margin-top:0">Yes Slip On</div><div class="fsg1">${one(Z.yes)}</div></div><div><div class="sec" style="margin-top:0">No Slip On</div><div class="fsg1">${one(Z.no)}</div></div></div>`:`<div class="fsg">${one(Z[md])}</div>`;
+  return `<div class="box" id="fscb"><div class="bh">${H}<select class="fss" onchange="DQ.fsm=this.value;FSU()"><option value="yes"${md==='yes'?' selected':''}>Yes Slip On</option><option value="no"${md==='no'?' selected':''}>No Slip On</option><option value="both"${md==='both'?' selected':''}>Yes &amp; No (sebelahan)</option></select></div>${body}<small style="display:block;color:#475569;margin-top:8px">Bentuk kaki dibaca dari kolom Footshape if Yes Slip On / Footshape if No Slip On (kode 1 huruf: R = Narrow, N = Normal, W = Wide). Result = On Progress / Pass / Eliminated dari data tester. Size Category terbaca otomatis dari UK Size: Tiger 3D Scanner sebagai acuan utama (kanan, jika kosong kiri); jika Tiger kosong memakai Brannock. Rentang ukuran per kategori: Woman &amp; Man (dewasa) mulai 3.5 ke atas; Infant 4K–9.5K; Children 10K–2; Junior 2.5–6.5; Kids 10K–6.5. ⚠ = ukuran di luar rentang kategori. Desimal ditulis dengan titik.</small></div>`};
+const FSC=Z=>{FZC=Z;const cs=Z&&Z.yes&&Z.yes.cats||[];
+  return FSB(Z)+(cs.length?`<div class="box">${dnt('Size Category Distribution',cs.map(c=>({g:c.c,n:c.total,c:FSCC[c.c],ck:['tester','_eq:size_category',c.c]})),{sub:'Total tester',size:200})}</div>`:'')};
 const resI=m=>[{g:'Pass',n:m.pass||0,c:'#10b981'},{g:'Fail',n:m.fail||0,c:'#ef4444'},{g:'On Progress',n:m.pending||0,c:'#f59e0b'}],
  prt=m=>(m.total?m.pass*100/m.total:0).toFixed(1)+'%',
  hrt=(rows,col,ck)=>(rows||[]).map(r=>`<div class="hb" ${ck?QF(ck[0],ck[1],r.g,r.g):''}><span title="${esc(r.g)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.g)}</span><div style="background:#eef3fb;border-radius:4px"><i style="width:${Math.max(r.v,3)}%;background:${r.c||col||'#10b981'};text-align:right;padding-right:6px">${r.v.toFixed(1)}%</i></div>${r.s?`<small style="grid-column:2;color:#475569">${esc(r.s)}</small>`:''}</div>`).join('')||'<small>Belum ada data</small>',
@@ -858,7 +868,7 @@ async function xbk(m,fs,heads,rows,off,nm){
   let c=0;
   fs.forEach((f,i)=>{if(f[2]!=='select'||!f[3]||!f[3].length)return;c++;f[3].forEach((v,r)=>ls.getCell(r+1,c).value=v);
     const L=ls.getColumn(c).letter,ref='Lists!$'+L+'$1:$'+L+'$'+f[3].length;
-    for(let r=2;r<=last;r++)ws.getCell(r,i+1+off).dataValidation={type:'list',allowBlank:true,showErrorMessage:true,errorTitle:'Pilihan tidak valid',error:'Pilih salah satu nilai dari dropdown.',formulae:[ref]}});
+    for(let r=2;r<=last;r++)ws.getCell(r,i+1+off).dataValidation={type:'list',allowBlank:true,showErrorMessage:!/^footshape_slipon/.test(f[0]),errorTitle:'Pilihan tidak valid',error:'Pilih salah satu nilai dari dropdown.',formulae:[ref]}});
   ls.state='hidden';
   const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=nm;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
@@ -881,7 +891,14 @@ async function tdel(){if(RO()||!ses||!window.TDUP)return;
   for(let i=0;i<ids.length;i+=100){m.textContent='Menghapus '+Math.min(i+100,ids.length)+' / '+ids.length+'...';const {data,error}=await sb.from('tester_pool').delete().in('id',ids.slice(i,i+100)).select('id');if(error){err=error.message;break}done+=(data||[]).length}
   if(err||done<ids.length){m.className='msg er';m.textContent=(err?'Gagal: '+err+'. ':'')+'Terhapus '+done+' dari '+ids.length+(done<ids.length&&!err?' (kemungkinan akun tidak punya izin delete di Supabase).':'.');b.disabled=false;list();return}
   window.TDUP=null;EDQ();alert(done+' data duplikat berhasil dihapus.');list()}
-const nd=s=>{s=String(s).trim();const t=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);return t?t[3]+'-'+t[2].padStart(2,'0')+'-'+t[1].padStart(2,'0'):s.slice(0,10)};
+const nd=s=>{s=String(s).trim();const p=n=>String(n).padStart(2,'0'),yy=y=>y.length===4?y:(+y<=+String(new Date().getFullYear()).slice(2)?'20':'19')+y,
+ ok=(y,m,d)=>{y=+y;m=+m;d=+d;if(m<1||m>12||d<1||d>new Date(y,m,0).getDate())return'';return y+'-'+p(m)+'-'+p(d)};
+ let t;
+ if(t=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/))return ok(t[1],t[2],t[3]);          // yyyy-mm-dd
+ if(t=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4}|\d{2})$/))return ok(yy(t[3]),t[2],t[1]); // dd-mm-yyyy / dd-mm-yy
+ if(t=s.match(/^(\d{1,2})[\/\-.](\d{4})$/))return ok(t[2],t[1],1);                              // mm-yyyy -> tanggal 1
+ if(t=s.match(/^(\d{4})$/))return ok(t[1],1,1);                                                 // yyyy -> 1 Jan
+ return''};   // format tidak dikenali: dikosongkan agar baris lain tetap masuk
 /* ===== Import Material Testing: UPDATE baris yang sudah ada (cocok via Lab Test No.), baris tidak ada = baru ===== */
 /* ===== Penyeragaman ejaan Material Testing (supplier, colour, material name) + desimal titik ===== */
 const NSUP={'pt.joil inni indonesia':'PT. JOIL INNI INDONESIA','pt. joil inni inonesia':'PT. JOIL INNI INDONESIA','pt. coats rejo indonesia':'PT COATS REJO INDONESIA','pt.boo young indonesia':'PT. BOO YOUNG INDONESIA',
@@ -968,7 +985,7 @@ async function imp(el){if(RO())return;
     if(f[2]==='date')x=typeof v==='number'?iso(new Date(Math.round((v-25569)*864e5))):nd(v);
     else if(f[2]==='number')x=Number(String(v).replace(',','.'));
     else{x=String(v).trim();if(f[2]==='select'){if(/^reject(ed)?$/i.test(x))x='Fail';if(/^release(d)?$/i.test(x))x='Pass';if(/^(on[ _-]?progress|in[ _-]?progress|ongoing)$/i.test(x))x='On Progress';if(K==='tester'&&f[0]==='gender'){if(/^(male|m|pria|laki.*)$/i.test(x))x='Man';if(/^(female|f|wanita|perempuan)$/i.test(x))x='Woman'}const q=f[3].find(z=>z.toLowerCase()===x.toLowerCase());if(q)x=q}}
-    if(f[0]==='size_no')x=x.replace(/^(\d+)\.(\d+)$/,'$1,$2');if(f[0]==='reject_zone'||f[0]==='reject_area'||f[0]==='reject_intervals')x=x.split(/[,;\/]/).map(s=>s.trim()).filter(Boolean).join(', ');if(x===''||Number.isNaN(x))continue;o[f[0]]=x}return o}).filter(o=>Object.keys(o).length);
+    if(f[0]==='footshape_slipon_yes'||f[0]==='footshape_slipon_no')x=FSN[x.toLowerCase()]||x;if(f[0]==='size_no')x=x.replace(/^(\d+)\.(\d+)$/,'$1,$2');if(f[0]==='reject_zone'||f[0]==='reject_area'||f[0]==='reject_intervals')x=x.split(/[,;\/]/).map(s=>s.trim()).filter(Boolean).join(', ');if(x===''||Number.isNaN(x))continue;o[f[0]]=x}return o}).filter(o=>Object.keys(o).length);
   if(!rows.length){el.value='';return alert('Tidak ada baris yang cocok. Gunakan header dari Template Excel.')}
   if(K==='tester')rows.forEach(r=>jf(r));
   if(K==='mat')return impMat(el,rows,wb,bad);
